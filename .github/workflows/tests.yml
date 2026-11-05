@@ -42,5 +42,49 @@ jobs:
         run: |
           python -m pytest tests/ \
             --cov=src \
+
             --cov-report=term-missing \
             --cov-fail-under=80
+
+
+  docker:
+    name: Verificar Docker y MySQL
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar configuracion de Docker Compose
+        working-directory: ./CLN
+        run: docker compose config --quiet
+
+      - name: Construir imagen de FerreMax
+        working-directory: ./CLN
+        run: docker compose build
+
+      - name: Iniciar MySQL
+        working-directory: ./CLN
+        run: docker compose up -d --wait db
+
+      - name: Verificar conexion a MySQL
+        working-directory: ./CLN
+        run: |
+          docker compose exec -T db \
+            mysql -h 127.0.0.1 \
+            -u"$DB_USER" -p"$DB_PASSWORD" \
+            -e "SELECT 1;" "$DB_NAME"
+        env:
+          DB_USER: ferremax_user
+          DB_PASSWORD: change_me
+          DB_NAME: ferremax
+
+      - name: Mostrar estado de contenedores
+        if: always()
+        working-directory: ./CLN
+        run: docker compose ps
+
+      - name: Detener contenedores
+        if: always()
+        working-directory: ./CLN
+        run: docker compose down
