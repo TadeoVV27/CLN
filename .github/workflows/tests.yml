@@ -32,10 +32,14 @@ jobs:
           fi
 
       - name: Ejecutar pruebas y medir cobertura
+        working-directory: ./CLN
         env:
           PYTHONPATH: .
         run: |
           python -m pytest tests/ \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-fail-under=80
             --cov=src \
             --cov-report=term-missing \
             --cov-fail-under=80
