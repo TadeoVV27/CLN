@@ -39,12 +39,8 @@ jobs:
       - name: Ejecutar pruebas y medir cobertura
         env:
           PYTHONPATH: .
-        run: |
-          python -m pytest tests/ \
-            --cov=src \
+        run: python -m pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=80
 
-            --cov-report=term-missing \
-            --cov-fail-under=80
 
 
   docker:
