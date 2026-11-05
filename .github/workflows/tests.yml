@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-      - feature/pruebas-unitarias
       - infra/docker-ci
+      - feature/pruebas-unitarias
+
   pull_request:
     branches:
       - main
@@ -13,6 +14,10 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./CLN
 
     steps:
       - name: Descargar repositorio
@@ -23,7 +28,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Instalar dependencias de pruebas
+      - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pytest-cov
@@ -32,14 +37,10 @@ jobs:
           fi
 
       - name: Ejecutar pruebas y medir cobertura
-        working-directory: ./CLN
         env:
           PYTHONPATH: .
         run: |
           python -m pytest tests/ \
-            --cov=src \
-            --cov-report=term-missing \
-            --cov-fail-under=80
             --cov=src \
             --cov-report=term-missing \
             --cov-fail-under=80
