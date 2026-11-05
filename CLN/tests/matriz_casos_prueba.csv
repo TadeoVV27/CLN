@@ -1,0 +1,10 @@
+Regla de Negocio,ID Caso,Tipo,Nombre del Caso,Entrada / Precondición,Resultado Esperado,Método de Prueba
+RN-01 Vigencia de Cotización,TC-01,Éxito,Cotización vigente permite operación,"Cotizacion(id=1, vigente=True)",No lanza excepción; la operación continúa,test_exito_cotizacion_vigente
+RN-01 Vigencia de Cotización,TC-02,Error,Cotización vencida detiene operación,"Cotizacion(id=2, vigente=False)","Lanza ValueError con mensaje ""vencida""",test_error_cotizacion_vencida
+RN-01 Vigencia de Cotización,TC-03,Edge Case,Cotización con id mínimo (0) pero vigente,"Cotizacion(id=0, vigente=True)","No lanza excepción; vigente=True se mantiene incluso con id=0",test_edge_cotizacion_recien_creada_vigente
+RN-02 Autorización de Crédito,TC-04,Éxito,Crédito autorizado permite operación,Credito(autorizado=True),No lanza excepción; crédito válido,test_exito_credito_autorizado
+RN-02 Autorización de Crédito,TC-05,Error,Crédito no autorizado rechaza operación,Credito(autorizado=False),"Lanza ValueError con mensaje ""no está autorizada""",test_error_credito_no_autorizado
+RN-02 Autorización de Crédito,TC-06,Edge Case,Orquestación completa cotización+crédito vía servicio,"Cotizacion(vigente=True) + Credito(autorizado=True), ValidacionApplicationService","Retorna ""Operación autorizada""",test_edge_validacion_operacion_credito_completa
+RN-03 Disponibilidad de Inventario,TC-07,Éxito,Inventario suficiente pasa verificación,"Inventario(existencia=50, comprometido=10), cantidad=30","No lanza excepción; disponible=40 >= 30",test_exito_inventario_suficiente
+RN-03 Disponibilidad de Inventario,TC-08,Error,Inventario insuficiente lanza error,"Inventario(existencia=10, comprometido=8), cantidad=5","Lanza ValueError ""Inventario insuficiente""; disponible=2 < 5",test_error_inventario_insuficiente
+RN-03 Disponibilidad de Inventario,TC-09,Edge Case,Cantidad exacta al límite del disponible,"Inventario(existencia=10, comprometido=5), cantidad=5","No lanza excepción; descuenta a existencia=5",test_edge_inventario_exacto_al_limite
