@@ -23,7 +23,27 @@ if BASE_DIR not in sys.path:
 
 from src.application.evaluador_docente import EvaluadorDocenteService
 
+def limpiar_archivos_resueltos(data_dir: str):
+    """Elimina los archivos generados dejando los originales intactos."""
+    archivos = [
+        os.path.join(data_dir, "casos_prueba_resueltos.csv"),
+        os.path.join(data_dir, "transiciones_prueba_resueltas.csv")
+    ]
+    print("\n[*] Limpiando archivos de resultados generados...")
+    for arch in archivos:
+        if os.path.exists(arch):
+            os.remove(arch)
+            print(f"    [ELIMINADO] {os.path.basename(arch)}")
+        else:
+            print(f"    [INFO] {os.path.basename(arch)} no existía.")
+    print("[LISTO] Limpieza terminada. Los CSVs originales se conservan intactos.\n")
+
 def main():
+    if "--limpiar" in sys.argv:
+        data_dir = os.path.join(BASE_DIR, "data")
+        limpiar_archivos_resueltos(data_dir)
+        return
+
     print("=" * 70)
     print(" [*] FERREMAX - PROCESADOR OFICIAL DE DATASETS CSV (PIA)")
     print("=" * 70)
