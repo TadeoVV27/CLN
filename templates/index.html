@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FerreMax - Mostrador y Caja</title>
-  <!-- Tailwind CSS CDN para estilizado rápido y limpio -->
+  <title>FerreMax POS - Sistema de Mostrador y Caja</title>
+  <!-- Tailwind CSS CDN para interfaz rápida y limpia -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -33,11 +33,6 @@
       #ticket-modal .no-print { display: none !important; }
     }
     .pos-btn:active { transform: scale(0.97); }
-    .badge-pulse { animation: pulse 1.5s infinite; }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col select-none">
@@ -60,56 +55,43 @@
         </div>
       </div>
 
-      <!-- Swagger / Docs link + Reloj en vivo y Cajero -->
-      <div class="flex items-center space-x-4">
-        <a href="/docs" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 bg-ferre-black hover:bg-gray-800 text-yellow-400 font-bold text-xs px-3 py-2 rounded-lg border border-yellow-500 shadow">
-          <span>⚡</span>
-          <span>Documentación API (Swagger)</span>
-        </a>
-
-        <div class="flex items-center space-x-3 bg-yellow-400 bg-opacity-70 px-4 py-2 rounded-lg border border-yellow-500">
-          <div class="text-right">
-            <div id="reloj" class="text-lg font-black tracking-wider text-ferre-black font-mono">12:00:00 PM</div>
-            <div id="fecha" class="text-xs font-bold text-gray-800">Viernes, 6 de Noviembre</div>
-          </div>
-          <div class="border-l border-yellow-600 pl-3 text-left">
-            <span class="text-xs uppercase font-bold text-gray-700 block">Atiende:</span>
-            <span class="text-sm font-black text-ferre-black flex items-center gap-1">
-              <span class="w-2.5 h-2.5 rounded-full bg-green-600 inline-block"></span> Don Beto (Mostrador 01)
-            </span>
-          </div>
+      <!-- Reloj en vivo y Operador en Turno -->
+      <div class="flex items-center space-x-3 bg-yellow-400 bg-opacity-70 px-4 py-2 rounded-lg border border-yellow-500">
+        <div class="text-right">
+          <div id="reloj" class="text-lg font-black tracking-wider text-ferre-black font-mono">12:00:00 PM</div>
+          <div id="fecha" class="text-xs font-bold text-gray-800">Viernes, 6 de Noviembre</div>
+        </div>
+        <div class="border-l border-yellow-600 pl-3 text-left">
+          <span class="text-xs uppercase font-bold text-gray-700 block">Cajero en turno:</span>
+          <span class="text-sm font-black text-ferre-black flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full bg-green-600 inline-block"></span> Don Beto (Caja 01)
+          </span>
         </div>
       </div>
     </div>
   </header>
 
   <!-- ==================================================================== -->
-  <!-- BOTONES DE NAVEGACIÓN PRINCIPAL (F1 - F4)                             -->
+  <!-- BOTONES DE NAVEGACIÓN PRINCIPAL (OPERATIVOS DE MOSTRADOR)           -->
   <!-- ==================================================================== -->
   <nav class="bg-ferre-gray text-white shadow-inner">
     <div class="max-w-7xl mx-auto px-4 flex flex-wrap gap-2 py-2">
       <button onclick="cambiarPestana('mostrador')" id="nav-mostrador"
-        class="tab-btn bg-ferre-yellow text-ferre-black font-black text-sm md:text-base px-4 py-2 rounded-md shadow flex items-center gap-2 transition">
+        class="tab-btn bg-ferre-yellow text-ferre-black font-black text-sm md:text-base px-5 py-2.5 rounded-md shadow flex items-center gap-2 transition">
         <span>🛒</span>
         <span>[F1] MOSTRADOR Y VENTA</span>
       </button>
 
       <button onclick="cambiarPestana('credito')" id="nav-credito"
-        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-4 py-2 rounded-md transition flex items-center gap-2">
+        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-5 py-2.5 rounded-md transition flex items-center gap-2">
         <span>📋</span>
-        <span>[F2] CRÉDITO Y COTIZACIÓN</span>
+        <span>[F2] COTIZACIONES Y CRÉDITO</span>
       </button>
 
       <button onclick="cambiarPestana('almacen')" id="nav-almacen"
-        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-4 py-2 rounded-md transition flex items-center gap-2">
+        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-5 py-2.5 rounded-md transition flex items-center gap-2">
         <span>📦</span>
         <span>[F3] ALMACÉN Y FALTANTES</span>
-      </button>
-
-      <button onclick="cambiarPestana('auditoria')" id="nav-auditoria"
-        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-4 py-2 rounded-md transition flex items-center gap-2 ml-auto">
-        <span>🧪</span>
-        <span>[F4] AUDITORÍA PIA (PRUEBAS)</span>
       </button>
     </div>
   </nav>
@@ -129,9 +111,9 @@
         <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
           <div>
             <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
-              <span>🧱</span> Catálogo de Material y Herramienta
+              <span>🧱</span> Catálogo de Materiales y Herramientas
             </h2>
-            <p class="text-xs text-gray-500">Haz clic en cualquier producto para cargarlo a la caja</p>
+            <p class="text-xs text-gray-500">Haz clic en el material para cargarlo a la caja</p>
           </div>
           <span class="bg-gray-100 text-gray-700 font-bold text-xs px-3 py-1 rounded-full border border-gray-300">
             Stock en tiempo real
@@ -151,15 +133,15 @@
         <div class="bg-white p-5 rounded-xl shadow-md border-2 border-yellow-500 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between border-b pb-2 mb-3">
-              <span class="text-xs font-black uppercase tracking-wider text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded">
-                CU-01: Venta de Mostrador
+              <span class="text-xs font-black uppercase tracking-wider text-yellow-800 bg-yellow-100 px-2 py-0.5 rounded">
+                Venta en Mostrador (Entrega Inmediata)
               </span>
-              <span id="caja-id-venta" class="text-xs font-mono font-bold text-gray-500">FOLIO SIGUIENTE: VTA-1001</span>
+              <span id="caja-id-venta" class="text-xs font-mono font-bold text-gray-500">SIGUIENTE TICKET: VTA-1001</span>
             </div>
 
             <!-- Producto seleccionado -->
             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4">
-              <span class="text-xs text-gray-500 font-bold uppercase block">Material Seleccionado:</span>
+              <span class="text-xs text-gray-500 font-bold uppercase block">Material a Despachar:</span>
               <div class="flex items-center gap-2 mt-1">
                 <span id="sel-icono" class="text-3xl">🧱</span>
                 <div class="flex-1">
@@ -171,14 +153,14 @@
                 </div>
               </div>
 
-              <!-- Indicadores de Stock -->
+              <!-- Indicadores de Stock de Bodega -->
               <div class="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-gray-200 text-center">
                 <div class="bg-white p-1.5 rounded border">
-                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Existencia</span>
+                  <span class="text-[10px] text-gray-500 font-bold block uppercase">En Bodega</span>
                   <span id="sel-existencia" class="text-base font-black text-gray-800">60</span>
                 </div>
                 <div class="bg-white p-1.5 rounded border">
-                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Comprometido</span>
+                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Apartado</span>
                   <span id="sel-comprometido" class="text-base font-black text-yellow-600">5</span>
                 </div>
                 <div class="bg-green-50 p-1.5 rounded border border-green-300">
@@ -190,7 +172,7 @@
 
             <!-- Selector de Cantidad con botones gigantes -->
             <div class="mb-4">
-              <label class="block text-xs font-black uppercase text-gray-700 mb-1">Cantidad a Vender:</label>
+              <label class="block text-xs font-black uppercase text-gray-700 mb-1">Cantidad de piezas o bultos:</label>
               <div class="flex items-center gap-2">
                 <button onclick="cambiarCantidad(-1)" class="pos-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-black text-2xl w-14 h-14 rounded-lg flex items-center justify-center border border-gray-300 shadow-sm">
                   −
@@ -203,16 +185,16 @@
                 </button>
               </div>
 
-              <!-- Botones de incremento rápido de obra -->
+              <!-- Botones de incremento rápido para material de obra -->
               <div class="grid grid-cols-4 gap-1.5 mt-2">
                 <button onclick="cambiarCantidad(5)" class="bg-gray-100 hover:bg-yellow-200 text-gray-800 font-bold text-xs py-1.5 rounded border border-gray-300">+5</button>
                 <button onclick="cambiarCantidad(10)" class="bg-gray-100 hover:bg-yellow-200 text-gray-800 font-bold text-xs py-1.5 rounded border border-gray-300">+10</button>
                 <button onclick="cambiarCantidad(25)" class="bg-gray-100 hover:bg-yellow-200 text-gray-800 font-bold text-xs py-1.5 rounded border border-gray-300">+25</button>
-                <button onclick="fijarMaximoDisponible()" class="bg-yellow-100 hover:bg-yellow-300 text-yellow-900 font-black text-xs py-1.5 rounded border border-yellow-400">Todo el stock</button>
+                <button onclick="fijarMaximoDisponible()" class="bg-yellow-100 hover:bg-yellow-300 text-yellow-900 font-black text-xs py-1.5 rounded border border-yellow-400">Todo lo que hay</button>
               </div>
             </div>
 
-            <!-- Gran Total de Caja -->
+            <!-- Total a Cobrar -->
             <div class="bg-ferre-black text-white p-4 rounded-xl mb-4 shadow-inner flex items-center justify-between">
               <div>
                 <span class="text-xs uppercase text-yellow-400 font-bold block">Total a Cobrar</span>
@@ -223,7 +205,7 @@
               </div>
             </div>
 
-            <!-- Alerta dinámica de stock / resultado -->
+            <!-- Alerta dinámica -->
             <div id="alerta-caja" class="hidden p-3 rounded-lg mb-4 text-sm font-bold"></div>
           </div>
 
@@ -238,11 +220,11 @@
         <!-- Últimas Ventas del Turno -->
         <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
           <div class="flex items-center justify-between pb-2 border-b text-xs font-black text-gray-600">
-            <span>ÚLTIMAS VENTAS DEL TURNO</span>
+            <span>ÚLTIMOS TICKETS DEL TURNO</span>
             <span id="contador-ventas-hoy" class="bg-gray-200 px-2 py-0.5 rounded text-gray-800">0 ventas</span>
           </div>
           <div id="lista-ultimas-ventas" class="divide-y divide-gray-100 max-h-36 overflow-y-auto text-xs mt-1">
-            <div class="py-2 text-center text-gray-400">Aún no hay ventas registradas en esta sesión.</div>
+            <div class="py-2 text-center text-gray-400">No hay ventas registradas todavía.</div>
           </div>
         </div>
 
@@ -260,11 +242,10 @@
           <div class="flex items-center justify-between pb-3 border-b mb-4">
             <div>
               <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
-                <span>📋</span> Cotizaciones de Clientes Registrados
+                <span>📋</span> Cotizaciones y Clientes de Crédito
               </h2>
-              <p class="text-xs text-gray-500">Selecciona un cliente para cargar y verificar su crédito</p>
+              <p class="text-xs text-gray-500">Selecciona el cliente para checar si su cotización y crédito están aprobados</p>
             </div>
-            <span class="bg-yellow-100 text-yellow-800 font-black text-xs px-2.5 py-1 rounded">CU-03</span>
           </div>
 
           <div class="space-y-3" id="lista-cotizaciones">
@@ -272,16 +253,16 @@
           </div>
         </div>
 
-        <!-- Panel Derecho: Validador de Regla de Negocio (6 columnas) -->
+        <!-- Panel Derecho: Validador de Autorización (6 columnas) -->
         <div class="lg:col-span-6 bg-white p-5 rounded-xl shadow-md border-2 border-yellow-500">
           <div class="pb-3 border-b mb-4">
             <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
-              <span>🚚</span> Validación y Autorización de Despacho
+              <span>🚚</span> Autorización de Entrega a Crédito
             </h2>
-            <p class="text-xs text-gray-500">Reglas: Cotización debe estar vigente Y crédito autorizado por cobranza</p>
+            <p class="text-xs text-gray-500">Verificación obligatoria de cotización vigente y línea de crédito autorizada</p>
           </div>
 
-          <!-- Datos de la Cotización en Validación -->
+          <!-- Datos de la Cotización -->
           <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3 mb-4">
             <div>
               <label class="text-xs font-black uppercase text-gray-600 block">Folio de Cotización:</label>
@@ -291,17 +272,17 @@
             </div>
 
             <div>
-              <label class="text-xs font-black uppercase text-gray-600 block">Nombre del Cliente / Constructora:</label>
+              <label class="text-xs font-black uppercase text-gray-600 block">Cliente / Constructora:</label>
               <input type="text" id="val-cliente" value="Constructora Regia S.A. de C.V."
                 class="w-full font-bold text-gray-800 px-3 py-2 border rounded-md bg-white">
             </div>
 
-            <!-- Interruptores Gigantes de Estado -->
+            <!-- Interruptores de Estado del Cliente -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               
               <!-- Interruptor 1: Vigencia -->
               <div class="p-3 bg-white rounded-lg border border-gray-300 flex flex-col justify-between">
-                <span class="text-xs font-black uppercase text-gray-700">1. Vigencia de Cotización</span>
+                <span class="text-xs font-black uppercase text-gray-700">1. Estado de la Cotización</span>
                 <div class="mt-2 flex gap-2">
                   <button type="button" onclick="setVigencia(true)" id="btn-vig-si"
                     class="pos-btn flex-1 py-2 font-black text-xs rounded bg-green-600 text-white shadow">
@@ -316,7 +297,7 @@
 
               <!-- Interruptor 2: Crédito -->
               <div class="p-3 bg-white rounded-lg border border-gray-300 flex flex-col justify-between">
-                <span class="text-xs font-black uppercase text-gray-700">2. Aprobación de Crédito</span>
+                <span class="text-xs font-black uppercase text-gray-700">2. Línea de Crédito</span>
                 <div class="mt-2 flex gap-2">
                   <button type="button" onclick="setCredito(true)" id="btn-cred-si"
                     class="pos-btn flex-1 py-2 font-black text-xs rounded bg-green-600 text-white shadow">
@@ -324,7 +305,7 @@
                   </button>
                   <button type="button" onclick="setCredito(false)" id="btn-cred-no"
                     class="pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700">
-                    ✕ RECHAZADO
+                    ✕ BLOQUEADO
                   </button>
                 </div>
               </div>
@@ -332,18 +313,18 @@
             </div>
           </div>
 
-          <!-- Resultado / Semáforo de Autorización -->
-          <div id="resultado-validacion" class="p-4 rounded-xl mb-4 border text-center transition">
+          <!-- Resultado / Semáforo de Despacho -->
+          <div id="resultado-validacion" class="p-4 rounded-xl mb-4 border text-center transition bg-gray-50">
             <span class="text-2xl block mb-1">🔍</span>
-            <div class="font-black text-base">Listo para validar operación a crédito</div>
-            <div class="text-xs text-gray-600">Haz clic en el botón de abajo para ejecutar las reglas de negocio</div>
+            <div class="font-black text-base">Listo para verificar entrega a crédito</div>
+            <div class="text-xs text-gray-600">Presiona el botón de abajo para confirmar si se puede entregar el material</div>
           </div>
 
           <!-- Botón Gigante de Autorizar -->
           <button onclick="validarCredito()"
             class="pos-btn w-full bg-yellow-500 hover:bg-yellow-600 text-ferre-black font-black text-lg py-4 rounded-xl shadow-lg border-b-4 border-yellow-700 flex items-center justify-center gap-2">
             <span>⚡</span>
-            <span>VALIDAR Y AUTORIZAR DESPACHO</span>
+            <span>VERIFICAR Y AUTORIZAR ENTREGA</span>
           </button>
         </div>
 
@@ -358,16 +339,15 @@
         <div class="flex items-center justify-between pb-3 border-b mb-4">
           <div>
             <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
-              <span>📦</span> Almacén: Control de Faltante y Pedido Parcial (CU-04)
+              <span>📦</span> Almacén: Control de Surtido y Pedidos Parciales
             </h2>
             <p class="text-xs text-gray-500">
-              Si un cliente de obra solicita más material del disponible, la regla de negocio permite marcar el pedido como <strong>PARCIAL</strong>.
+              Si un cliente de obra pide más material del que hay en bodega, el sistema permite registrar la entrega como <strong>PARCIAL</strong> para entregar lo que hay y solicitar el resto.
             </p>
           </div>
-          <span class="bg-yellow-100 text-yellow-800 font-black text-xs px-2.5 py-1 rounded">CU-04</span>
         </div>
 
-        <!-- Formulario de Simulación de Almacén -->
+        <!-- Formulario de Surtido de Almacén -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div class="bg-gray-50 p-4 rounded-lg border">
             <label class="text-xs font-black uppercase text-gray-600 block mb-1">Material Solicitado:</label>
@@ -376,7 +356,7 @@
             </select>
 
             <div class="mt-3 p-3 bg-white rounded border">
-              <span class="text-xs text-gray-500 font-bold block">Stock disponible en bodega:</span>
+              <span class="text-xs text-gray-500 font-bold block">Disponible en bodega hoy:</span>
               <span id="almacen-disponible" class="text-2xl font-black text-green-700">55 bultos</span>
             </div>
           </div>
@@ -386,180 +366,18 @@
               <label class="text-xs font-black uppercase text-gray-600 block mb-1">Cantidad que pide el cliente:</label>
               <input type="number" id="almacen-cantidad" value="100" min="1"
                 class="w-full text-center text-3xl font-black text-gray-900 p-2 border-2 border-yellow-500 rounded-lg">
-              <span class="text-xs text-gray-500 mt-1 block">Prueba con un número mayor al disponible para activar la regla de pedido parcial.</span>
+              <span class="text-xs text-gray-500 mt-1 block">Prueba con un número mayor a la existencia para registrar entrega parcial.</span>
             </div>
 
             <button onclick="gestionarFaltante()"
               class="pos-btn mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-lg shadow border-b-4 border-blue-900">
-              📦 GESTIONAR DESPACHO EN ALMACÉN
+              📦 REVISAR DISPONIBILIDAD Y SURTIR
             </button>
           </div>
         </div>
 
         <!-- Respuesta del Almacén -->
         <div id="resultado-almacen" class="hidden p-4 rounded-xl border-2 text-center"></div>
-      </div>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- PESTAÑA 4: AUDITORÍA Y MATRIZ DE PRUEBAS DEL PIA (13 PRUEBAS)      -->
-    <!-- ================================================================== -->
-    <div id="pestana-auditoria" class="pestana-contenido hidden">
-      <div class="bg-white p-5 rounded-xl shadow-md border border-gray-200">
-        
-        <div class="flex flex-wrap items-center justify-between pb-3 border-b mb-4 gap-3">
-          <div>
-            <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
-              <span>🧪</span> Matriz de Casos de Prueba y Ejecución de Pytest (PIA)
-            </h2>
-            <p class="text-xs text-gray-500">
-              Validación formal de las 3 reglas de negocio reales (Éxito, Error y Edge Case) + Persistencia + Mocks.
-            </p>
-          </div>
-
-          <button onclick="ejecutarPruebasPytest()" id="btn-run-tests"
-            class="pos-btn bg-green-600 hover:bg-green-700 text-white font-black text-sm px-5 py-3 rounded-xl shadow-lg border-b-4 border-green-800 flex items-center gap-2">
-            <span>▶</span>
-            <span>EJECUTAR PRUEBAS EN VIVO (PYTEST)</span>
-          </button>
-        </div>
-
-        <!-- Tabla Matriz de 9 Casos -->
-        <div class="overflow-x-auto mb-6">
-          <table class="w-full text-left text-xs border border-gray-200 rounded-lg overflow-hidden">
-            <thead class="bg-ferre-black text-white uppercase text-[11px] font-black">
-              <tr>
-                <th class="p-3">Regla de Negocio</th>
-                <th class="p-3">ID</th>
-                <th class="p-3">Tipo</th>
-                <th class="p-3">Caso de Prueba</th>
-                <th class="p-3">Entrada / Condición</th>
-                <th class="p-3">Resultado Esperado</th>
-                <th class="p-3 text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 font-medium">
-              <!-- RN-01 -->
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-yellow-800">RN-01: Vigencia Cotización</td>
-                <td class="p-3 font-mono font-bold">TC-01</td>
-                <td class="p-3"><span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">Éxito</span></td>
-                <td class="p-3">Cotización vigente permite operación</td>
-                <td class="p-3 font-mono text-[10px]">vigente=True</td>
-                <td class="p-3">Operación continúa sin error</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-yellow-800">RN-01: Vigencia Cotización</td>
-                <td class="p-3 font-mono font-bold">TC-02</td>
-                <td class="p-3"><span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Error</span></td>
-                <td class="p-3">Cotización vencida detiene operación</td>
-                <td class="p-3 font-mono text-[10px]">vigente=False</td>
-                <td class="p-3">ValueError("...vencida")</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-yellow-800">RN-01: Vigencia Cotización</td>
-                <td class="p-3 font-mono font-bold">TC-03</td>
-                <td class="p-3"><span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded">Edge Case</span></td>
-                <td class="p-3">Cotización con id=0 pero vigente</td>
-                <td class="p-3 font-mono text-[10px]">id=0, vigente=True</td>
-                <td class="p-3">Vigencia válida con ID extremo</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-
-              <!-- RN-02 -->
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-blue-800">RN-02: Autorización Crédito</td>
-                <td class="p-3 font-mono font-bold">TC-04</td>
-                <td class="p-3"><span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">Éxito</span></td>
-                <td class="p-3">Crédito autorizado permite despacho</td>
-                <td class="p-3 font-mono text-[10px]">autorizado=True</td>
-                <td class="p-3">Operación aprobada</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-blue-800">RN-02: Autorización Crédito</td>
-                <td class="p-3 font-mono font-bold">TC-05</td>
-                <td class="p-3"><span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Error</span></td>
-                <td class="p-3">Crédito no autorizado rechaza venta</td>
-                <td class="p-3 font-mono text-[10px]">autorizado=False</td>
-                <td class="p-3">ValueError("...no está autorizada")</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-blue-800">RN-02: Autorización Crédito</td>
-                <td class="p-3 font-mono font-bold">TC-06</td>
-                <td class="p-3"><span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded">Edge Case</span></td>
-                <td class="p-3">Orquestación completa con servicio</td>
-                <td class="p-3 font-mono text-[10px]">Cotización + Crédito + UoW</td>
-                <td class="p-3">"Operación autorizada"</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-
-              <!-- RN-03 -->
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-purple-800">RN-03: Stock Inventario</td>
-                <td class="p-3 font-mono font-bold">TC-07</td>
-                <td class="p-3"><span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">Éxito</span></td>
-                <td class="p-3">Inventario suficiente pasa validación</td>
-                <td class="p-3 font-mono text-[10px]">Disp: 40, Pide: 30</td>
-                <td class="p-3">Verificación exitosa</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-purple-800">RN-03: Stock Inventario</td>
-                <td class="p-3 font-mono font-bold">TC-08</td>
-                <td class="p-3"><span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Error</span></td>
-                <td class="p-3">Inventario insuficiente lanza error</td>
-                <td class="p-3 font-mono text-[10px]">Disp: 2, Pide: 5</td>
-                <td class="p-3">ValueError("Inventario insuficiente")</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="p-3 font-bold text-purple-800">RN-03: Stock Inventario</td>
-                <td class="p-3 font-mono font-bold">TC-09</td>
-                <td class="p-3"><span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded">Edge Case</span></td>
-                <td class="p-3">Cantidad exacta al límite del disponible</td>
-                <td class="p-3 font-mono text-[10px]">Disp: 5, Pide: 5</td>
-                <td class="p-3">Permite venta y descuenta a cero</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-
-              <!-- Persistencia y Mocks -->
-              <tr class="bg-gray-50">
-                <td class="p-3 font-bold text-gray-900" colspan="2">🗄️ Persistencia In-Memory</td>
-                <td class="p-3"><span class="bg-gray-200 text-gray-800 font-bold px-2 py-0.5 rounded">Persistencia</span></td>
-                <td class="p-3">Guardar y recuperar entidad Venta</td>
-                <td class="p-3 font-mono text-[10px]">InMemoryVentaRepository</td>
-                <td class="p-3">Recupera con integridad de atributos</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-              <tr class="bg-gray-50">
-                <td class="p-3 font-bold text-gray-900" colspan="2">🎭 Pruebas con Mock</td>
-                <td class="p-3"><span class="bg-gray-200 text-gray-800 font-bold px-2 py-0.5 rounded">Mocks</span></td>
-                <td class="p-3">Aislamiento de repositorios y Unit of Work</td>
-                <td class="p-3 font-mono text-[10px]">Mock(IVentaRepo, IUoW)</td>
-                <td class="p-3">Llamadas assert_called_once()</td>
-                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Terminal de Salida de Pytest -->
-        <div class="bg-ferre-black rounded-xl p-4 text-white font-mono text-xs">
-          <div class="flex items-center justify-between pb-2 border-b border-gray-700 mb-2">
-            <span class="text-yellow-400 font-bold flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Consola de Pytest (Salida del Servidor)
-            </span>
-            <span id="test-status-pill" class="text-green-400 font-bold">13 PASSED (0.05s)</span>
-          </div>
-          <pre id="consola-pytest" class="overflow-x-auto max-h-60 text-green-400 leading-relaxed">
-Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en el servidor.
-          </pre>
-        </div>
-
       </div>
     </div>
 
@@ -618,7 +436,7 @@ Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en
       <div class="text-center text-[10px] text-gray-500 pt-2 border-t border-dashed border-gray-300">
         <p class="font-bold">¡GRACIAS POR SU COMPRA!</p>
         <p>Material revisado y entregado en mostrador.</p>
-        <p class="mt-1 font-mono text-[9px] text-gray-400">Transacción UoW Confirmada • FerreMax Clean Arch</p>
+        <p class="mt-1 font-mono text-[9px] text-gray-400">Sucursal Matriz • FerreMax S.A. de C.V.</p>
       </div>
 
       <!-- Botones de Acción (no imprimibles) -->
@@ -655,7 +473,6 @@ Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en
       if (e.key === 'F1') { e.preventDefault(); cambiarPestana('mostrador'); }
       if (e.key === 'F2') { e.preventDefault(); cambiarPestana('credito'); }
       if (e.key === 'F3') { e.preventDefault(); cambiarPestana('almacen'); }
-      if (e.key === 'F4') { e.preventDefault(); cambiarPestana('auditoria'); }
       if (e.key === 'Escape') { cerrarTicket(); }
     });
 
@@ -672,10 +489,6 @@ Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en
       if (boton) {
         boton.classList.remove('bg-gray-700', 'text-white');
         boton.classList.add('bg-ferre-yellow', 'text-ferre-black');
-      }
-
-      if (nombre === 'auditoria') {
-        ejecutarPruebasPytest();
       }
     }
 
@@ -901,7 +714,7 @@ Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en
 
         const badgeCred = cot.credito_autorizado
           ? '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.5 rounded">CRÉDITO OK</span>'
-          : '<span class="bg-red-100 text-red-800 text-[10px] font-black px-1.5 py-0.5 rounded">SIN CRÉDITO</span>';
+          : '<span class="bg-red-100 text-red-800 text-[10px] font-black px-1.5 py-0.5 rounded">BLOQUEADO</span>';
 
         div.innerHTML = `
           <div class="flex items-center justify-between mb-1">
@@ -928,7 +741,7 @@ Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en
       resEl.innerHTML = `
         <span class="text-2xl block mb-1">📋</span>
         <div class="font-black text-sm">Cotización ${cot.folio} cargada</div>
-        <div class="text-xs text-gray-500">Haz clic en VALIDAR Y AUTORIZAR DESPACHO para evaluar las reglas</div>
+        <div class="text-xs text-gray-500">Presiona VERIFICAR Y AUTORIZAR ENTREGA para confirmar</div>
       `;
     }
 
@@ -1045,51 +858,19 @@ Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en
           box.className = 'p-4 rounded-xl border-2 border-yellow-500 bg-yellow-50 text-yellow-900 text-center';
           box.innerHTML = `
             <span class="text-3xl block mb-1">⚠️</span>
-            <div class="font-black text-base">ESTADO: PEDIDO MARCADO COMO PARCIAL</div>
+            <div class="font-black text-base">ENTREGA PARCIAL REGISTRADA</div>
             <div class="text-xs mt-1">${data.detalle}</div>
           `;
         } else {
           box.className = 'p-4 rounded-xl border-2 border-green-500 bg-green-50 text-green-900 text-center';
           box.innerHTML = `
             <span class="text-3xl block mb-1">✅</span>
-            <div class="font-black text-base">INVENTARIO DISPONIBLE COMPLETO</div>
+            <div class="font-black text-base">MATERIAL COMPLETO DISPONIBLE</div>
             <div class="text-xs mt-1">${data.detalle}</div>
           `;
         }
       } catch (err) {
         console.error(err);
-      }
-    }
-
-    async function ejecutarPruebasPytest() {
-      const btn = document.getElementById('btn-run-tests');
-      const consola = document.getElementById('consola-pytest');
-      const pill = document.getElementById('test-status-pill');
-
-      btn.disabled = true;
-      btn.classList.add('opacity-70');
-      consola.textContent = 'Ejecutando suite de pruebas unitarias pytest...\n';
-      pill.textContent = 'EJECUTANDO...';
-      pill.className = 'text-yellow-400 font-bold';
-
-      try {
-        const res = await fetch('/api/pruebas/ejecutar', { method: 'POST' });
-        const data = await res.json();
-
-        if (data.ok) {
-          consola.textContent = data.salida;
-          pill.textContent = 'TODAS PASSED (100% ÉXITO)';
-          pill.className = 'text-green-400 font-black';
-        } else {
-          consola.textContent = data.salida || data.error || 'Error ejecutando pruebas';
-          pill.textContent = 'ERROR EN PRUEBAS';
-          pill.className = 'text-red-400 font-black';
-        }
-      } catch (err) {
-        consola.textContent = 'Error de conexión: ' + err.message;
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-70');
       }
     }
 
