@@ -157,18 +157,28 @@ def crear_documento_word():
                         p_hist.add_run(linea + "\n")
 
     doc.add_heading("1.4 Diagrama de Procesos de Negocio (BPMN)", level=2)
+    diag_bpmn = os.path.join(BASE_DIR, "diagrams", "diagrama-procesos-bpmn.png")
+    if os.path.exists(diag_bpmn):
+        try:
+            doc.add_picture(diag_bpmn, width=Inches(6.2))
+            p_pie_bpmn = doc.add_paragraph("Figura 1: Diagrama de Procesos de Negocio (BPMN) — Flujo Comercial FerreMax")
+            p_pie_bpmn.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_pie_bpmn.runs[0].font.size = Pt(9)
+            p_pie_bpmn.runs[0].font.italic = True
+        except Exception:
+            pass
+
     doc.add_paragraph(
-        "A continuación se detalla el flujo formal del proceso de negocio (BPMN) para FerreMax, "
-        "desde la solicitud del cliente hasta la entrega física o cancelación:\n\n"
-        "1. Inicio del Proceso: El cliente solicita una cotización o se presenta en el mostrador para una compra directa.\n"
-        "2. Validación de Condiciones Comerciales (Compuerta Exclusiva):\n"
-        "   • Si la cotización está vencida o el crédito no está aprobado -> La operación se detiene y transita a CANCELADO.\n"
-        "   • Si las condiciones son válidas -> La operación es APROBADA por el supervisor.\n"
-        "3. Verificación de Existencias en Bodega (Compuerta Exclusiva):\n"
-        "   • Si el inventario disponible cubre la totalidad -> Se autoriza el SURTIDO completo.\n"
-        "   • Si hay inventario insuficiente -> Se genera un Pedido PARCIAL y se dispara solicitud de resurtido a la sucursal de origen.\n"
-        "4. Despacho y Entrega: El chofer o bodeguero entrega el material al cliente, transicionando la orden a ENTREGADO.\n"
-        "5. Fin del Proceso: Emisión del ticket y actualización de inventario físico."
+        "Descripción del Flujo Operativo BPMN:\n"
+        "1. Inicio del Proceso: Solicitud de compra en mostrador o generación de cotización.\n"
+        "2. Registrar Operación: Se crea la orden en estado CREADO con sus líneas de detalle.\n"
+        "3. Compuerta Exclusiva de Validación Comercial:\n"
+        "   • Si la cotización está vencida o el crédito no está autorizado -> La orden transita a CANCELADO.\n"
+        "   • Si cumple todas las condiciones comerciales -> La orden pasa a estado APROBADO.\n"
+        "4. Compuerta Exclusiva de Existencias en Bodega:\n"
+        "   • Si el inventario disponible cubre la demanda -> Se autoriza el SURTIDO completo.\n"
+        "   • Si el inventario es insuficiente -> Se marca como PARCIAL y se solicita resurtido.\n"
+        "5. Despacho y Entrega: Se entrega físicamente el material, transicionando a ENTREGADO y emitiendo el ticket."
     )
 
     doc.add_page_break()
@@ -184,7 +194,7 @@ def crear_documento_word():
     if os.path.exists(diag_clases):
         try:
             doc.add_picture(diag_clases, width=Inches(6.0))
-            p_pie = doc.add_paragraph("Figura 1: Diagrama de Clases del Modelo de Dominio FerreMax (DDD)")
+            p_pie = doc.add_paragraph("Figura 2: Diagrama de Clases del Modelo de Dominio FerreMax (DDD)")
             p_pie.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_pie.runs[0].font.size = Pt(9)
             p_pie.runs[0].font.italic = True
@@ -249,7 +259,7 @@ def crear_documento_word():
         try:
             doc.add_paragraph("Flujo Normal (Venta de Mostrador Exitosa):")
             doc.add_picture(diag_seq_normal, width=Inches(5.8))
-            p_pie1 = doc.add_paragraph("Figura 2: Diagrama de Secuencia - Flujo Normal de Venta en Mostrador")
+            p_pie1 = doc.add_paragraph("Figura 3: Diagrama de Secuencia - Flujo Normal de Venta en Mostrador")
             p_pie1.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_pie1.runs[0].font.size = Pt(9)
             p_pie1.runs[0].font.italic = True
@@ -261,7 +271,7 @@ def crear_documento_word():
         try:
             doc.add_paragraph("Flujo de Excepción (Detención por Cotización Vencida / Crédito No Aprobado):")
             doc.add_picture(diag_seq_exc, width=Inches(5.8))
-            p_pie2 = doc.add_paragraph("Figura 3: Diagrama de Secuencia - Flujo de Excepción y Detención")
+            p_pie2 = doc.add_paragraph("Figura 4: Diagrama de Secuencia - Flujo de Excepción y Detención")
             p_pie2.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_pie2.runs[0].font.size = Pt(9)
             p_pie2.runs[0].font.italic = True

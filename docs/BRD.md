@@ -199,18 +199,7 @@ Escenario: Emisión exitosa de comprobante
 
 ## 4. Diagrama de Procesos (BPMN)
 
-```mermaid
-stateDiagram-v2
-    [*] --> CREADO : Registrar Operación / Cotización
-    
-    CREADO --> APROBADO : Aprobar (Valida vigencia y crédito)
-    CREADO --> CANCELADO : Cancelar operación
-    
-    APROBADO --> SURTIDO : Surtir (Valida existencia en bodega)
-    APROBADO --> CANCELADO : Cancelar antes de surtir
-    
-    SURTIDO --> ENTREGADO : Entregar material a cliente
-    
-    ENTREGADO --> [*]
-    CANCELADO --> [*]
-```
+![Diagrama de Procesos BPMN](../diagrams/diagrama-procesos-bpmn.png)
+
+*Figura: Diagrama de Procesos de Negocio (BPMN) — Flujo Comercial y Ciclo de Vida de la Operación en FerreMax.*
+
