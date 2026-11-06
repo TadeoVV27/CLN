@@ -521,10 +521,12 @@ def frontend_mostrador():
 
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.environ.get("PORT", 8000))
     print("=" * 65)
     print(" 🛠️  FERREMAX POS - SISTEMA DE MOSTRADOR Y CAJA (FASTAPI) 🛠️")
     print("=" * 65)
-    print(" -> Mostrador: http://localhost:8000")
-    print(" -> Documentación Swagger API: http://localhost:8000/docs")
+    print(f" -> Servidor activo en puerto: {port}")
+    print(f" -> Mostrador: http://0.0.0.0:{port}")
+    print(f" -> Documentación Swagger API: http://0.0.0.0:{port}/docs")
     print("=" * 65)
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=port)
