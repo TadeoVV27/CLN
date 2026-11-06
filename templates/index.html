@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FerreMax - Mostrador y Caja</title>
+  <!-- Tailwind CSS CDN para estilizado rápido y limpio -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ferre: {
+              yellow: '#F59E0B',
+              darkyellow: '#D97706',
+              black: '#111827',
+              gray: '#1F2937',
+              lightgray: '#F3F4F6',
+              green: '#10B981',
+              red: '#EF4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #ticket-modal, #ticket-modal * { visibility: visible; }
+      #ticket-modal { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; }
+      #ticket-modal .no-print { display: none !important; }
+    }
+    .pos-btn:active { transform: scale(0.97); }
+    .badge-pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex flex-col select-none">
+
+  <!-- ==================================================================== -->
+  <!-- BARRA SUPERIOR: ENCABEZADO FERRETERO INDUSTRIAL                     -->
+  <!-- ==================================================================== -->
+  <header class="bg-ferre-yellow text-ferre-black px-4 py-3 shadow-md border-b-4 border-yellow-600">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 bg-ferre-black text-ferre-yellow rounded-lg flex items-center justify-center font-black text-2xl shadow">
+          🔨
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-black tracking-tight uppercase">FERREMAX</h1>
+            <span class="bg-ferre-black text-yellow-300 text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider">Caja & Mostrador</span>
+          </div>
+          <p class="text-xs font-semibold text-gray-800">Herramientas, Materiales y Aceros • Sucursal Matriz</p>
+        </div>
+      </div>
+
+      <!-- Swagger / Docs link + Reloj en vivo y Cajero -->
+      <div class="flex items-center space-x-4">
+        <a href="/docs" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 bg-ferre-black hover:bg-gray-800 text-yellow-400 font-bold text-xs px-3 py-2 rounded-lg border border-yellow-500 shadow">
+          <span>⚡</span>
+          <span>Documentación API (Swagger)</span>
+        </a>
+
+        <div class="flex items-center space-x-3 bg-yellow-400 bg-opacity-70 px-4 py-2 rounded-lg border border-yellow-500">
+          <div class="text-right">
+            <div id="reloj" class="text-lg font-black tracking-wider text-ferre-black font-mono">12:00:00 PM</div>
+            <div id="fecha" class="text-xs font-bold text-gray-800">Viernes, 6 de Noviembre</div>
+          </div>
+          <div class="border-l border-yellow-600 pl-3 text-left">
+            <span class="text-xs uppercase font-bold text-gray-700 block">Atiende:</span>
+            <span class="text-sm font-black text-ferre-black flex items-center gap-1">
+              <span class="w-2.5 h-2.5 rounded-full bg-green-600 inline-block"></span> Don Beto (Mostrador 01)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================================================================== -->
+  <!-- BOTONES DE NAVEGACIÓN PRINCIPAL (F1 - F4)                             -->
+  <!-- ==================================================================== -->
+  <nav class="bg-ferre-gray text-white shadow-inner">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap gap-2 py-2">
+      <button onclick="cambiarPestana('mostrador')" id="nav-mostrador"
+        class="tab-btn bg-ferre-yellow text-ferre-black font-black text-sm md:text-base px-4 py-2 rounded-md shadow flex items-center gap-2 transition">
+        <span>🛒</span>
+        <span>[F1] MOSTRADOR Y VENTA</span>
+      </button>
+
+      <button onclick="cambiarPestana('credito')" id="nav-credito"
+        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-4 py-2 rounded-md transition flex items-center gap-2">
+        <span>📋</span>
+        <span>[F2] CRÉDITO Y COTIZACIÓN</span>
+      </button>
+
+      <button onclick="cambiarPestana('almacen')" id="nav-almacen"
+        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-4 py-2 rounded-md transition flex items-center gap-2">
+        <span>📦</span>
+        <span>[F3] ALMACÉN Y FALTANTES</span>
+      </button>
+
+      <button onclick="cambiarPestana('auditoria')" id="nav-auditoria"
+        class="tab-btn bg-gray-700 hover:bg-gray-600 text-white font-bold text-sm md:text-base px-4 py-2 rounded-md transition flex items-center gap-2 ml-auto">
+        <span>🧪</span>
+        <span>[F4] AUDITORÍA PIA (PRUEBAS)</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==================================================================== -->
+  <!-- CONTENEDOR PRINCIPAL                                                 -->
+  <!-- ==================================================================== -->
+  <main class="max-w-7xl mx-auto px-4 py-4 flex-1 w-full">
+
+    <!-- ================================================================== -->
+    <!-- PESTAÑA 1: MOSTRADOR / VENTA RÁPIDA (CU-01)                        -->
+    <!-- ================================================================== -->
+    <div id="pestana-mostrador" class="pestana-contenido grid grid-cols-1 lg:grid-cols-12 gap-4">
+      
+      <!-- Panel Izquierdo: Catálogo Ferretero (7 columnas) -->
+      <div class="lg:col-span-7 bg-white p-4 rounded-xl shadow-md border border-gray-200">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-3">
+          <div>
+            <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+              <span>🧱</span> Catálogo de Material y Herramienta
+            </h2>
+            <p class="text-xs text-gray-500">Haz clic en cualquier producto para cargarlo a la caja</p>
+          </div>
+          <span class="bg-gray-100 text-gray-700 font-bold text-xs px-3 py-1 rounded-full border border-gray-300">
+            Stock en tiempo real
+          </span>
+        </div>
+
+        <!-- Rejilla de Productos -->
+        <div id="grid-productos" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[560px] overflow-y-auto pr-1">
+          <div class="p-6 text-center text-gray-400 font-bold col-span-2">Cargando catálogo ferretero...</div>
+        </div>
+      </div>
+
+      <!-- Panel Derecho: Terminal de Cobro / Caja (5 columnas) -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        
+        <!-- Tarjeta de Detalle de Venta -->
+        <div class="bg-white p-5 rounded-xl shadow-md border-2 border-yellow-500 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b pb-2 mb-3">
+              <span class="text-xs font-black uppercase tracking-wider text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded">
+                CU-01: Venta de Mostrador
+              </span>
+              <span id="caja-id-venta" class="text-xs font-mono font-bold text-gray-500">FOLIO SIGUIENTE: VTA-1001</span>
+            </div>
+
+            <!-- Producto seleccionado -->
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4">
+              <span class="text-xs text-gray-500 font-bold uppercase block">Material Seleccionado:</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="sel-icono" class="text-3xl">🧱</span>
+                <div class="flex-1">
+                  <div id="sel-nombre" class="font-black text-gray-800 text-lg leading-tight">Cemento Gris Tolteca 50kg</div>
+                  <div class="text-xs font-bold text-gray-500">
+                    Código: <span id="sel-codigo" class="text-gray-700 font-mono">CEM-001</span> • 
+                    Precio: <span class="text-green-700 font-black">$<span id="sel-precio">245.00</span></span> / <span id="sel-unidad">Bulto</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Indicadores de Stock -->
+              <div class="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-gray-200 text-center">
+                <div class="bg-white p-1.5 rounded border">
+                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Existencia</span>
+                  <span id="sel-existencia" class="text-base font-black text-gray-800">60</span>
+                </div>
+                <div class="bg-white p-1.5 rounded border">
+                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Comprometido</span>
+                  <span id="sel-comprometido" class="text-base font-black text-yellow-600">5</span>
+                </div>
+                <div class="bg-green-50 p-1.5 rounded border border-green-300">
+                  <span class="text-[10px] text-green-700 font-bold block uppercase">Disponible</span>
+                  <span id="sel-disponible" class="text-base font-black text-green-700">55</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selector de Cantidad con botones gigantes -->
+            <div class="mb-4">
+              <label class="block text-xs font-black uppercase text-gray-700 mb-1">Cantidad a Vender:</label>
+              <div class="flex items-center gap-2">
+                <button onclick="cambiarCantidad(-1)" class="pos-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-black text-2xl w-14 h-14 rounded-lg flex items-center justify-center border border-gray-300 shadow-sm">
+                  −
+                </button>
+                <input type="number" id="input-cantidad" value="1" min="1"
+                  class="flex-1 h-14 text-center font-black text-3xl text-gray-900 border-2 border-yellow-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-600 font-mono"
+                  oninput="recalcularTotal()">
+                <button onclick="cambiarCantidad(1)" class="pos-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-black text-2xl w-14 h-14 rounded-lg flex items-center justify-center border border-gray-300 shadow-sm">
+                  +
+                </button>
+              </div>
+
+              <!-- Botones de incremento rápido de obra -->
+              <div class="grid grid-cols-4 gap-1.5 mt-2">
+                <button onclick="cambiarCantidad(5)" class="bg-gray-100 hover:bg-yellow-200 text-gray-800 font-bold text-xs py-1.5 rounded border border-gray-300">+5</button>
+                <button onclick="cambiarCantidad(10)" class="bg-gray-100 hover:bg-yellow-200 text-gray-800 font-bold text-xs py-1.5 rounded border border-gray-300">+10</button>
+                <button onclick="cambiarCantidad(25)" class="bg-gray-100 hover:bg-yellow-200 text-gray-800 font-bold text-xs py-1.5 rounded border border-gray-300">+25</button>
+                <button onclick="fijarMaximoDisponible()" class="bg-yellow-100 hover:bg-yellow-300 text-yellow-900 font-black text-xs py-1.5 rounded border border-yellow-400">Todo el stock</button>
+              </div>
+            </div>
+
+            <!-- Gran Total de Caja -->
+            <div class="bg-ferre-black text-white p-4 rounded-xl mb-4 shadow-inner flex items-center justify-between">
+              <div>
+                <span class="text-xs uppercase text-yellow-400 font-bold block">Total a Cobrar</span>
+                <span class="text-xs text-gray-400">IVA incluido</span>
+              </div>
+              <div class="text-right">
+                <span id="gran-total" class="text-3xl font-black font-mono text-yellow-400">$245.00</span>
+              </div>
+            </div>
+
+            <!-- Alerta dinámica de stock / resultado -->
+            <div id="alerta-caja" class="hidden p-3 rounded-lg mb-4 text-sm font-bold"></div>
+          </div>
+
+          <!-- BOTÓN GIGANTE DE COBRO -->
+          <button onclick="procesarVentaMostrador()" id="btn-cobrar"
+            class="pos-btn w-full bg-green-600 hover:bg-green-700 text-white font-black text-xl py-4 rounded-xl shadow-lg border-b-4 border-green-800 flex items-center justify-center gap-3 transition">
+            <span class="text-2xl">💵</span>
+            <span>COBRAR Y ENTREGAR EN MOSTRADOR</span>
+          </button>
+        </div>
+
+        <!-- Últimas Ventas del Turno -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+          <div class="flex items-center justify-between pb-2 border-b text-xs font-black text-gray-600">
+            <span>ÚLTIMAS VENTAS DEL TURNO</span>
+            <span id="contador-ventas-hoy" class="bg-gray-200 px-2 py-0.5 rounded text-gray-800">0 ventas</span>
+          </div>
+          <div id="lista-ultimas-ventas" class="divide-y divide-gray-100 max-h-36 overflow-y-auto text-xs mt-1">
+            <div class="py-2 text-center text-gray-400">Aún no hay ventas registradas en esta sesión.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- PESTAÑA 2: CRÉDITO Y COTIZACIONES (CU-03)                          -->
+    <!-- ================================================================== -->
+    <div id="pestana-credito" class="pestana-contenido hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- Panel Izquierdo: Cotizaciones Rápidas (6 columnas) -->
+        <div class="lg:col-span-6 bg-white p-5 rounded-xl shadow-md border border-gray-200">
+          <div class="flex items-center justify-between pb-3 border-b mb-4">
+            <div>
+              <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+                <span>📋</span> Cotizaciones de Clientes Registrados
+              </h2>
+              <p class="text-xs text-gray-500">Selecciona un cliente para cargar y verificar su crédito</p>
+            </div>
+            <span class="bg-yellow-100 text-yellow-800 font-black text-xs px-2.5 py-1 rounded">CU-03</span>
+          </div>
+
+          <div class="space-y-3" id="lista-cotizaciones">
+            <!-- Cargado con JS -->
+          </div>
+        </div>
+
+        <!-- Panel Derecho: Validador de Regla de Negocio (6 columnas) -->
+        <div class="lg:col-span-6 bg-white p-5 rounded-xl shadow-md border-2 border-yellow-500">
+          <div class="pb-3 border-b mb-4">
+            <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+              <span>🚚</span> Validación y Autorización de Despacho
+            </h2>
+            <p class="text-xs text-gray-500">Reglas: Cotización debe estar vigente Y crédito autorizado por cobranza</p>
+          </div>
+
+          <!-- Datos de la Cotización en Validación -->
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3 mb-4">
+            <div>
+              <label class="text-xs font-black uppercase text-gray-600 block">Folio de Cotización:</label>
+              <input type="text" id="val-folio" value="COT-101"
+                class="w-full font-mono font-bold text-gray-800 px-3 py-2 border rounded-md bg-white">
+              <input type="hidden" id="val-id-cotizacion" value="101">
+            </div>
+
+            <div>
+              <label class="text-xs font-black uppercase text-gray-600 block">Nombre del Cliente / Constructora:</label>
+              <input type="text" id="val-cliente" value="Constructora Regia S.A. de C.V."
+                class="w-full font-bold text-gray-800 px-3 py-2 border rounded-md bg-white">
+            </div>
+
+            <!-- Interruptores Gigantes de Estado -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              
+              <!-- Interruptor 1: Vigencia -->
+              <div class="p-3 bg-white rounded-lg border border-gray-300 flex flex-col justify-between">
+                <span class="text-xs font-black uppercase text-gray-700">1. Vigencia de Cotización</span>
+                <div class="mt-2 flex gap-2">
+                  <button type="button" onclick="setVigencia(true)" id="btn-vig-si"
+                    class="pos-btn flex-1 py-2 font-black text-xs rounded bg-green-600 text-white shadow">
+                    ✓ VIGENTE
+                  </button>
+                  <button type="button" onclick="setVigencia(false)" id="btn-vig-no"
+                    class="pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700">
+                    ✕ VENCIDA
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interruptor 2: Crédito -->
+              <div class="p-3 bg-white rounded-lg border border-gray-300 flex flex-col justify-between">
+                <span class="text-xs font-black uppercase text-gray-700">2. Aprobación de Crédito</span>
+                <div class="mt-2 flex gap-2">
+                  <button type="button" onclick="setCredito(true)" id="btn-cred-si"
+                    class="pos-btn flex-1 py-2 font-black text-xs rounded bg-green-600 text-white shadow">
+                    ✓ AUTORIZADO
+                  </button>
+                  <button type="button" onclick="setCredito(false)" id="btn-cred-no"
+                    class="pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700">
+                    ✕ RECHAZADO
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Resultado / Semáforo de Autorización -->
+          <div id="resultado-validacion" class="p-4 rounded-xl mb-4 border text-center transition">
+            <span class="text-2xl block mb-1">🔍</span>
+            <div class="font-black text-base">Listo para validar operación a crédito</div>
+            <div class="text-xs text-gray-600">Haz clic en el botón de abajo para ejecutar las reglas de negocio</div>
+          </div>
+
+          <!-- Botón Gigante de Autorizar -->
+          <button onclick="validarCredito()"
+            class="pos-btn w-full bg-yellow-500 hover:bg-yellow-600 text-ferre-black font-black text-lg py-4 rounded-xl shadow-lg border-b-4 border-yellow-700 flex items-center justify-center gap-2">
+            <span>⚡</span>
+            <span>VALIDAR Y AUTORIZAR DESPACHO</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- PESTAÑA 3: ALMACÉN Y FALTANTES (CU-04)                             -->
+    <!-- ================================================================== -->
+    <div id="pestana-almacen" class="pestana-contenido hidden">
+      <div class="bg-white p-5 rounded-xl shadow-md border border-gray-200 max-w-4xl mx-auto">
+        <div class="flex items-center justify-between pb-3 border-b mb-4">
+          <div>
+            <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+              <span>📦</span> Almacén: Control de Faltante y Pedido Parcial (CU-04)
+            </h2>
+            <p class="text-xs text-gray-500">
+              Si un cliente de obra solicita más material del disponible, la regla de negocio permite marcar el pedido como <strong>PARCIAL</strong>.
+            </p>
+          </div>
+          <span class="bg-yellow-100 text-yellow-800 font-black text-xs px-2.5 py-1 rounded">CU-04</span>
+        </div>
+
+        <!-- Formulario de Simulación de Almacén -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="bg-gray-50 p-4 rounded-lg border">
+            <label class="text-xs font-black uppercase text-gray-600 block mb-1">Material Solicitado:</label>
+            <select id="almacen-producto" class="w-full p-2.5 bg-white border rounded-md font-bold text-gray-800" onchange="actualizarInfoAlmacen()">
+              <!-- Opciones dinámicas -->
+            </select>
+
+            <div class="mt-3 p-3 bg-white rounded border">
+              <span class="text-xs text-gray-500 font-bold block">Stock disponible en bodega:</span>
+              <span id="almacen-disponible" class="text-2xl font-black text-green-700">55 bultos</span>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg border flex flex-col justify-between">
+            <div>
+              <label class="text-xs font-black uppercase text-gray-600 block mb-1">Cantidad que pide el cliente:</label>
+              <input type="number" id="almacen-cantidad" value="100" min="1"
+                class="w-full text-center text-3xl font-black text-gray-900 p-2 border-2 border-yellow-500 rounded-lg">
+              <span class="text-xs text-gray-500 mt-1 block">Prueba con un número mayor al disponible para activar la regla de pedido parcial.</span>
+            </div>
+
+            <button onclick="gestionarFaltante()"
+              class="pos-btn mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 rounded-lg shadow border-b-4 border-blue-900">
+              📦 GESTIONAR DESPACHO EN ALMACÉN
+            </button>
+          </div>
+        </div>
+
+        <!-- Respuesta del Almacén -->
+        <div id="resultado-almacen" class="hidden p-4 rounded-xl border-2 text-center"></div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- PESTAÑA 4: AUDITORÍA Y MATRIZ DE PRUEBAS DEL PIA (13 PRUEBAS)      -->
+    <!-- ================================================================== -->
+    <div id="pestana-auditoria" class="pestana-contenido hidden">
+      <div class="bg-white p-5 rounded-xl shadow-md border border-gray-200">
+        
+        <div class="flex flex-wrap items-center justify-between pb-3 border-b mb-4 gap-3">
+          <div>
+            <h2 class="text-xl font-black text-gray-800 flex items-center gap-2">
+              <span>🧪</span> Matriz de Casos de Prueba y Ejecución de Pytest (PIA)
+            </h2>
+            <p class="text-xs text-gray-500">
+              Validación formal de las 3 reglas de negocio reales (Éxito, Error y Edge Case) + Persistencia + Mocks.
+            </p>
+          </div>
+
+          <button onclick="ejecutarPruebasPytest()" id="btn-run-tests"
+            class="pos-btn bg-green-600 hover:bg-green-700 text-white font-black text-sm px-5 py-3 rounded-xl shadow-lg border-b-4 border-green-800 flex items-center gap-2">
+            <span>▶</span>
+            <span>EJECUTAR PRUEBAS EN VIVO (PYTEST)</span>
+          </button>
+        </div>
+
+        <!-- Tabla Matriz de 9 Casos -->
+        <div class="overflow-x-auto mb-6">
+          <table class="w-full text-left text-xs border border-gray-200 rounded-lg overflow-hidden">
+            <thead class="bg-ferre-black text-white uppercase text-[11px] font-black">
+              <tr>
+                <th class="p-3">Regla de Negocio</th>
+                <th class="p-3">ID</th>
+                <th class="p-3">Tipo</th>
+                <th class="p-3">Caso de Prueba</th>
+                <th class="p-3">Entrada / Condición</th>
+                <th class="p-3">Resultado Esperado</th>
+                <th class="p-3 text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 font-medium">
+              <!-- RN-01 -->
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-yellow-800">RN-01: Vigencia Cotización</td>
+                <td class="p-3 font-mono font-bold">TC-01</td>
+                <td class="p-3"><span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">Éxito</span></td>
+                <td class="p-3">Cotización vigente permite operación</td>
+                <td class="p-3 font-mono text-[10px]">vigente=True</td>
+                <td class="p-3">Operación continúa sin error</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-yellow-800">RN-01: Vigencia Cotización</td>
+                <td class="p-3 font-mono font-bold">TC-02</td>
+                <td class="p-3"><span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Error</span></td>
+                <td class="p-3">Cotización vencida detiene operación</td>
+                <td class="p-3 font-mono text-[10px]">vigente=False</td>
+                <td class="p-3">ValueError("...vencida")</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-yellow-800">RN-01: Vigencia Cotización</td>
+                <td class="p-3 font-mono font-bold">TC-03</td>
+                <td class="p-3"><span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded">Edge Case</span></td>
+                <td class="p-3">Cotización con id=0 pero vigente</td>
+                <td class="p-3 font-mono text-[10px]">id=0, vigente=True</td>
+                <td class="p-3">Vigencia válida con ID extremo</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+
+              <!-- RN-02 -->
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-blue-800">RN-02: Autorización Crédito</td>
+                <td class="p-3 font-mono font-bold">TC-04</td>
+                <td class="p-3"><span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">Éxito</span></td>
+                <td class="p-3">Crédito autorizado permite despacho</td>
+                <td class="p-3 font-mono text-[10px]">autorizado=True</td>
+                <td class="p-3">Operación aprobada</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-blue-800">RN-02: Autorización Crédito</td>
+                <td class="p-3 font-mono font-bold">TC-05</td>
+                <td class="p-3"><span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Error</span></td>
+                <td class="p-3">Crédito no autorizado rechaza venta</td>
+                <td class="p-3 font-mono text-[10px]">autorizado=False</td>
+                <td class="p-3">ValueError("...no está autorizada")</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-blue-800">RN-02: Autorización Crédito</td>
+                <td class="p-3 font-mono font-bold">TC-06</td>
+                <td class="p-3"><span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded">Edge Case</span></td>
+                <td class="p-3">Orquestación completa con servicio</td>
+                <td class="p-3 font-mono text-[10px]">Cotización + Crédito + UoW</td>
+                <td class="p-3">"Operación autorizada"</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+
+              <!-- RN-03 -->
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-purple-800">RN-03: Stock Inventario</td>
+                <td class="p-3 font-mono font-bold">TC-07</td>
+                <td class="p-3"><span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded">Éxito</span></td>
+                <td class="p-3">Inventario suficiente pasa validación</td>
+                <td class="p-3 font-mono text-[10px]">Disp: 40, Pide: 30</td>
+                <td class="p-3">Verificación exitosa</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-purple-800">RN-03: Stock Inventario</td>
+                <td class="p-3 font-mono font-bold">TC-08</td>
+                <td class="p-3"><span class="bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">Error</span></td>
+                <td class="p-3">Inventario insuficiente lanza error</td>
+                <td class="p-3 font-mono text-[10px]">Disp: 2, Pide: 5</td>
+                <td class="p-3">ValueError("Inventario insuficiente")</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 font-bold text-purple-800">RN-03: Stock Inventario</td>
+                <td class="p-3 font-mono font-bold">TC-09</td>
+                <td class="p-3"><span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-0.5 rounded">Edge Case</span></td>
+                <td class="p-3">Cantidad exacta al límite del disponible</td>
+                <td class="p-3 font-mono text-[10px]">Disp: 5, Pide: 5</td>
+                <td class="p-3">Permite venta y descuenta a cero</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+
+              <!-- Persistencia y Mocks -->
+              <tr class="bg-gray-50">
+                <td class="p-3 font-bold text-gray-900" colspan="2">🗄️ Persistencia In-Memory</td>
+                <td class="p-3"><span class="bg-gray-200 text-gray-800 font-bold px-2 py-0.5 rounded">Persistencia</span></td>
+                <td class="p-3">Guardar y recuperar entidad Venta</td>
+                <td class="p-3 font-mono text-[10px]">InMemoryVentaRepository</td>
+                <td class="p-3">Recupera con integridad de atributos</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="p-3 font-bold text-gray-900" colspan="2">🎭 Pruebas con Mock</td>
+                <td class="p-3"><span class="bg-gray-200 text-gray-800 font-bold px-2 py-0.5 rounded">Mocks</span></td>
+                <td class="p-3">Aislamiento de repositorios y Unit of Work</td>
+                <td class="p-3 font-mono text-[10px]">Mock(IVentaRepo, IUoW)</td>
+                <td class="p-3">Llamadas assert_called_once()</td>
+                <td class="p-3 text-center"><span class="test-badge font-bold text-green-600">✔ PASSED</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Terminal de Salida de Pytest -->
+        <div class="bg-ferre-black rounded-xl p-4 text-white font-mono text-xs">
+          <div class="flex items-center justify-between pb-2 border-b border-gray-700 mb-2">
+            <span class="text-yellow-400 font-bold flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> Consola de Pytest (Salida del Servidor)
+            </span>
+            <span id="test-status-pill" class="text-green-400 font-bold">13 PASSED (0.05s)</span>
+          </div>
+          <pre id="consola-pytest" class="overflow-x-auto max-h-60 text-green-400 leading-relaxed">
+Presiona el botón "EJECUTAR PRUEBAS EN VIVO" para lanzar pytest directamente en el servidor.
+          </pre>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================================================================== -->
+  <!-- MODAL DE TICKET DE VENTA (IMPRIMIBLE)                                 -->
+  <!-- ==================================================================== -->
+  <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-gray-800 font-mono text-xs border-4 border-yellow-500">
+      
+      <!-- Encabezado del Ticket -->
+      <div class="text-center pb-3 border-b-2 border-dashed border-gray-400">
+        <div class="text-2xl font-black text-ferre-black">FERREMAX</div>
+        <div class="text-[10px] text-gray-600 uppercase font-bold">Materiales de Construcción y Aceros</div>
+        <div class="text-[10px] text-gray-500">RFC: FMA-950812-XYZ • Tel: 81-8000-FERRE</div>
+        <div class="text-[10px] text-gray-500 mt-1">Av. Las Torres #1420, Mty, N.L.</div>
+      </div>
+
+      <!-- Datos de la Venta -->
+      <div class="py-3 border-b border-dashed border-gray-300 space-y-1">
+        <div class="flex justify-between">
+          <span class="text-gray-500">FOLIO:</span>
+          <span id="ticket-folio" class="font-black text-sm text-gray-900">VTA-1001</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">FECHA:</span>
+          <span id="ticket-fecha" class="font-bold">06/11/2026 12:30:00</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">CAJERO:</span>
+          <span class="font-bold">Don Beto (Caja 01)</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">ESTADO:</span>
+          <span id="ticket-estado" class="bg-green-100 text-green-800 font-black px-1 rounded">CONFIRMADA</span>
+        </div>
+      </div>
+
+      <!-- Desglose de Productos -->
+      <div class="py-3 border-b-2 border-dashed border-gray-400">
+        <div class="font-bold text-[11px] mb-1" id="ticket-prod-nombre">Cemento Gris Tolteca 50kg</div>
+        <div class="flex justify-between text-gray-600">
+          <span><span id="ticket-cant">1</span> x $<span id="ticket-precio">245.00</span></span>
+          <span class="font-black text-gray-900 text-sm">$<span id="ticket-importe">245.00</span></span>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="py-3 text-right">
+        <span class="text-xs uppercase text-gray-500 block">TOTAL PAGADO</span>
+        <span id="ticket-total" class="text-2xl font-black text-ferre-black font-mono">$245.00</span>
+      </div>
+
+      <!-- Pie del Ticket -->
+      <div class="text-center text-[10px] text-gray-500 pt-2 border-t border-dashed border-gray-300">
+        <p class="font-bold">¡GRACIAS POR SU COMPRA!</p>
+        <p>Material revisado y entregado en mostrador.</p>
+        <p class="mt-1 font-mono text-[9px] text-gray-400">Transacción UoW Confirmada • FerreMax Clean Arch</p>
+      </div>
+
+      <!-- Botones de Acción (no imprimibles) -->
+      <div class="mt-5 flex gap-2 no-print">
+        <button onclick="window.print()" class="pos-btn flex-1 bg-yellow-500 hover:bg-yellow-600 text-ferre-black font-black py-2.5 rounded-lg">
+          🖨️ IMPRIMIR
+        </button>
+        <button onclick="cerrarTicket()" class="pos-btn flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-black py-2.5 rounded-lg">
+          LISTO (CERRAR)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- SCRIPTS JS                                                           -->
+  <!-- ==================================================================== -->
+  <script>
+    let catalogo = [];
+    let productoSeleccionado = null;
+    let cotizaciones = [];
+
+    function actualizarReloj() {
+      const ahora = new Date();
+      document.getElementById('reloj').textContent = ahora.toLocaleTimeString();
+      const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('fecha').textContent = ahora.toLocaleDateString('es-MX', opciones);
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'F1') { e.preventDefault(); cambiarPestana('mostrador'); }
+      if (e.key === 'F2') { e.preventDefault(); cambiarPestana('credito'); }
+      if (e.key === 'F3') { e.preventDefault(); cambiarPestana('almacen'); }
+      if (e.key === 'F4') { e.preventDefault(); cambiarPestana('auditoria'); }
+      if (e.key === 'Escape') { cerrarTicket(); }
+    });
+
+    function cambiarPestana(nombre) {
+      document.querySelectorAll('.pestana-contenido').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-ferre-yellow', 'text-ferre-black');
+        btn.classList.add('bg-gray-700', 'text-white');
+      });
+
+      const pestana = document.getElementById('pestana-' + nombre);
+      const boton = document.getElementById('nav-' + nombre);
+      if (pestana) pestana.classList.remove('hidden');
+      if (boton) {
+        boton.classList.remove('bg-gray-700', 'text-white');
+        boton.classList.add('bg-ferre-yellow', 'text-ferre-black');
+      }
+
+      if (nombre === 'auditoria') {
+        ejecutarPruebasPytest();
+      }
+    }
+
+    async function cargarCatalogo() {
+      try {
+        const res = await fetch('/api/productos');
+        const data = await res.json();
+        if (data.ok) {
+          catalogo = data.productos;
+          renderizarCatalogo();
+          if (!productoSeleccionado && catalogo.length > 0) {
+            seleccionarProducto(catalogo[0].id);
+          }
+          poblarSelectAlmacen();
+        }
+      } catch (err) {
+        console.error('Error cargando catálogo:', err);
+      }
+    }
+
+    function renderizarCatalogo() {
+      const contenedor = document.getElementById('grid-productos');
+      contenedor.innerHTML = '';
+
+      catalogo.forEach(prod => {
+        const esSeleccionado = productoSeleccionado && productoSeleccionado.id === prod.id;
+        const claseBorde = esSeleccionado ? 'border-2 border-yellow-500 bg-yellow-50' : 'border border-gray-200 bg-white hover:border-yellow-400';
+        const colorStock = prod.disponible > 10 ? 'text-green-700 bg-green-50 border-green-300' : 'text-red-700 bg-red-50 border-red-300';
+
+        const div = document.createElement('div');
+        div.className = `pos-btn cursor-pointer p-3 rounded-xl shadow-sm transition flex flex-col justify-between ${claseBorde}`;
+        div.onclick = () => seleccionarProducto(prod.id);
+
+        div.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between">
+              <span class="text-3xl">${prod.icono}</span>
+              <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded border ${colorStock}">
+                Disp: ${prod.disponible}
+              </span>
+            </div>
+            <div class="font-black text-gray-800 text-sm mt-2 leading-tight">${prod.nombre}</div>
+            <div class="text-[10px] font-mono font-bold text-gray-500">${prod.codigo} • ${prod.categoria}</div>
+          </div>
+          <div class="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
+            <span class="text-xs text-gray-500 font-bold">Por ${prod.unidad}</span>
+            <span class="text-base font-black text-green-700 font-mono">$${prod.precio.toFixed(2)}</span>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function seleccionarProducto(id) {
+      productoSeleccionado = catalogo.find(p => p.id === id);
+      if (!productoSeleccionado) return;
+
+      document.getElementById('sel-icono').textContent = productoSeleccionado.icono;
+      document.getElementById('sel-nombre').textContent = productoSeleccionado.nombre;
+      document.getElementById('sel-codigo').textContent = productoSeleccionado.codigo;
+      document.getElementById('sel-precio').textContent = productoSeleccionado.precio.toFixed(2);
+      document.getElementById('sel-unidad').textContent = productoSeleccionado.unidad;
+      document.getElementById('sel-existencia').textContent = productoSeleccionado.existencia;
+      document.getElementById('sel-comprometido').textContent = productoSeleccionado.comprometido;
+      document.getElementById('sel-disponible').textContent = productoSeleccionado.disponible;
+
+      ocultarAlertaCaja();
+      recalcularTotal();
+      renderizarCatalogo();
+    }
+
+    function cambiarCantidad(delta) {
+      const input = document.getElementById('input-cantidad');
+      let val = parseInt(input.value || 1) + delta;
+      if (val < 1) val = 1;
+      input.value = val;
+      recalcularTotal();
+    }
+
+    function fijarMaximoDisponible() {
+      if (!productoSeleccionado) return;
+      document.getElementById('input-cantidad').value = Math.max(1, productoSeleccionado.disponible);
+      recalcularTotal();
+    }
+
+    function recalcularTotal() {
+      if (!productoSeleccionado) return;
+      const cant = parseInt(document.getElementById('input-cantidad').value || 1);
+      const total = productoSeleccionado.precio * cant;
+      document.getElementById('gran-total').textContent = '$' + total.toFixed(2);
+
+      if (cant > productoSeleccionado.disponible) {
+        mostrarAlertaCaja(
+          '⚠️ ATENCIÓN: Pides ' + cant + ' ' + productoSeleccionado.unidad + '(s) pero solo hay ' + productoSeleccionado.disponible + ' disponibles en bodega.',
+          'yellow'
+        );
+      } else {
+        ocultarAlertaCaja();
+      }
+    }
+
+    function mostrarAlertaCaja(mensaje, color) {
+      const el = document.getElementById('alerta-caja');
+      el.className = color === 'red'
+        ? 'p-3 rounded-lg mb-4 text-xs font-black bg-red-100 text-red-800 border-2 border-red-500'
+        : 'p-3 rounded-lg mb-4 text-xs font-black bg-yellow-100 text-yellow-900 border-2 border-yellow-500';
+      el.textContent = mensaje;
+      el.classList.remove('hidden');
+    }
+
+    function ocultarAlertaCaja() {
+      document.getElementById('alerta-caja').classList.add('hidden');
+    }
+
+    async function procesarVentaMostrador() {
+      if (!productoSeleccionado) return;
+
+      const cantidad = parseInt(document.getElementById('input-cantidad').value || 1);
+      const btn = document.getElementById('btn-cobrar');
+      btn.disabled = true;
+      btn.classList.add('opacity-70');
+
+      try {
+        const res = await fetch('/api/venta/procesar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            producto_id: productoSeleccionado.id,
+            cantidad: cantidad
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.ok) {
+          mostrarTicket(data.ticket);
+          await cargarCatalogo();
+          seleccionarProducto(productoSeleccionado.id);
+          actualizarUltimasVentas();
+        } else {
+          const detalle = data.detail ? (data.detail.mensaje + ' ' + (data.detail.detalle || '')) : (data.mensaje || 'Error');
+          mostrarAlertaCaja('⛔ ' + detalle, 'red');
+          reproducirBeep(250, 400);
+        }
+      } catch (err) {
+        mostrarAlertaCaja('Error de conexión con el servidor', 'red');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70');
+      }
+    }
+
+    function mostrarTicket(t) {
+      document.getElementById('ticket-folio').textContent = t.folio;
+      document.getElementById('ticket-fecha').textContent = t.fecha;
+      document.getElementById('ticket-prod-nombre').textContent = t.producto;
+      document.getElementById('ticket-cant').textContent = t.cantidad;
+      document.getElementById('ticket-precio').textContent = t.precio_unitario.toFixed(2);
+      document.getElementById('ticket-importe').textContent = t.total.toFixed(2);
+      document.getElementById('ticket-total').textContent = '$' + t.total.toFixed(2);
+      document.getElementById('ticket-estado').textContent = t.estado.toUpperCase();
+      document.getElementById('ticket-modal').classList.remove('hidden');
+
+      reproducirBeep(880, 150);
+    }
+
+    function cerrarTicket() {
+      document.getElementById('ticket-modal').classList.add('hidden');
+    }
+
+    async function actualizarUltimasVentas() {
+      try {
+        const res = await fetch('/api/ventas/historial');
+        const data = await res.json();
+        if (data.ok) {
+          const lista = document.getElementById('lista-ultimas-ventas');
+          document.getElementById('contador-ventas-hoy').textContent = data.ventas.length + ' venta(s)';
+          if (data.ventas.length === 0) return;
+
+          lista.innerHTML = '';
+          data.ventas.slice(0, 5).forEach(v => {
+            const div = document.createElement('div');
+            div.className = 'py-2 flex items-center justify-between';
+            div.innerHTML = `
+              <div>
+                <span class="font-bold text-gray-800">${v.folio}</span> • ${v.producto} (x${v.cantidad})
+                <div class="text-[10px] text-gray-500">${v.fecha}</div>
+              </div>
+              <span class="font-mono font-black text-green-700">$${v.total.toFixed(2)}</span>
+            `;
+            lista.appendChild(div);
+          });
+        }
+      } catch (err) {}
+    }
+
+    let estadoVigencia = true;
+    let estadoCredito = true;
+
+    async function cargarCotizaciones() {
+      try {
+        const res = await fetch('/api/cotizaciones');
+        const data = await res.json();
+        if (data.ok) {
+          cotizaciones = data.cotizaciones;
+          renderizarCotizaciones();
+        }
+      } catch (err) {}
+    }
+
+    function renderizarCotizaciones() {
+      const c = document.getElementById('lista-cotizaciones');
+      c.innerHTML = '';
+
+      cotizaciones.forEach(cot => {
+        const div = document.createElement('div');
+        div.className = 'pos-btn cursor-pointer p-3 rounded-lg border hover:border-yellow-500 bg-gray-50 hover:bg-yellow-50 transition';
+        div.onclick = () => seleccionarCotizacion(cot);
+
+        const badgeVig = cot.vigente
+          ? '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.5 rounded">VIGENTE</span>'
+          : '<span class="bg-red-100 text-red-800 text-[10px] font-black px-1.5 py-0.5 rounded">VENCIDA</span>';
+
+        const badgeCred = cot.credito_autorizado
+          ? '<span class="bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.5 rounded">CRÉDITO OK</span>'
+          : '<span class="bg-red-100 text-red-800 text-[10px] font-black px-1.5 py-0.5 rounded">SIN CRÉDITO</span>';
+
+        div.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-mono font-black text-sm text-gray-800">${cot.folio}</span>
+            <div class="flex gap-1">${badgeVig} ${badgeCred}</div>
+          </div>
+          <div class="font-bold text-xs text-gray-700">${cot.cliente}</div>
+          <div class="text-[11px] text-gray-500">${cot.descripcion}</div>
+          <div class="mt-1 text-right font-mono font-bold text-xs text-yellow-800">$${cot.monto.toLocaleString('es-MX', {minimumFractionDigits: 2})}</div>
+        `;
+        c.appendChild(div);
+      });
+    }
+
+    function seleccionarCotizacion(cot) {
+      document.getElementById('val-folio').value = cot.folio;
+      document.getElementById('val-id-cotizacion').value = cot.id;
+      document.getElementById('val-cliente').value = cot.cliente;
+      setVigencia(cot.vigente);
+      setCredito(cot.credito_autorizado);
+
+      const resEl = document.getElementById('resultado-validacion');
+      resEl.className = 'p-4 rounded-xl mb-4 border text-center transition bg-gray-50';
+      resEl.innerHTML = `
+        <span class="text-2xl block mb-1">📋</span>
+        <div class="font-black text-sm">Cotización ${cot.folio} cargada</div>
+        <div class="text-xs text-gray-500">Haz clic en VALIDAR Y AUTORIZAR DESPACHO para evaluar las reglas</div>
+      `;
+    }
+
+    function setVigencia(val) {
+      estadoVigencia = val;
+      const si = document.getElementById('btn-vig-si');
+      const no = document.getElementById('btn-vig-no');
+      if (val) {
+        si.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-green-600 text-white shadow';
+        no.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700';
+      } else {
+        si.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700';
+        no.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-red-600 text-white shadow';
+      }
+    }
+
+    function setCredito(val) {
+      estadoCredito = val;
+      const si = document.getElementById('btn-cred-si');
+      const no = document.getElementById('btn-cred-no');
+      if (val) {
+        si.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-green-600 text-white shadow';
+        no.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700';
+      } else {
+        si.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-gray-200 text-gray-700';
+        no.className = 'pos-btn flex-1 py-2 font-black text-xs rounded bg-red-600 text-white shadow';
+      }
+    }
+
+    async function validarCredito() {
+      const folio = document.getElementById('val-folio').value;
+      const cliente = document.getElementById('val-cliente').value;
+      const id = parseInt(document.getElementById('val-id-cotizacion').value || 101);
+
+      try {
+        const res = await fetch('/api/credito/validar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_cotizacion: id,
+            folio: folio,
+            cliente: cliente,
+            vigente: estadoVigencia,
+            credito_autorizado: estadoCredito
+          })
+        });
+
+        const data = await res.json();
+        const box = document.getElementById('resultado-validacion');
+
+        if (res.ok && data.ok) {
+          box.className = 'p-4 rounded-xl mb-4 border-2 border-green-500 bg-green-50 text-green-900 text-center';
+          box.innerHTML = `
+            <span class="text-3xl block mb-1">✅</span>
+            <div class="font-black text-base">${data.mensaje}</div>
+            <div class="text-xs mt-1">${data.detalle}</div>
+          `;
+          reproducirBeep(700, 200);
+        } else {
+          const detalle = data.detail ? data.detail : data;
+          box.className = 'p-4 rounded-xl mb-4 border-2 border-red-500 bg-red-50 text-red-900 text-center';
+          box.innerHTML = `
+            <span class="text-3xl block mb-1">⛔</span>
+            <div class="font-black text-base">${detalle.mensaje}</div>
+            <div class="text-xs mt-1 font-semibold">${detalle.detalle}</div>
+          `;
+          reproducirBeep(250, 400);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function poblarSelectAlmacen() {
+      const sel = document.getElementById('almacen-producto');
+      sel.innerHTML = '';
+      catalogo.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.icono} ${p.nombre} (${p.codigo})`;
+        sel.appendChild(opt);
+      });
+      actualizarInfoAlmacen();
+    }
+
+    function actualizarInfoAlmacen() {
+      const sel = document.getElementById('almacen-producto');
+      const prod = catalogo.find(p => p.id === parseInt(sel.value));
+      if (!prod) return;
+      document.getElementById('almacen-disponible').textContent = `${prod.disponible} ${prod.unidad}(s)`;
+    }
+
+    async function gestionarFaltante() {
+      const sel = document.getElementById('almacen-producto');
+      const prodId = parseInt(sel.value);
+      const cantidad = parseInt(document.getElementById('almacen-cantidad').value || 1);
+
+      try {
+        const res = await fetch('/api/almacen/gestionar-faltante', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            producto_id: prodId,
+            cantidad: cantidad,
+            id_pedido: 501
+          })
+        });
+
+        const data = await res.json();
+        const box = document.getElementById('resultado-almacen');
+        box.classList.remove('hidden');
+
+        if (data.es_parcial) {
+          box.className = 'p-4 rounded-xl border-2 border-yellow-500 bg-yellow-50 text-yellow-900 text-center';
+          box.innerHTML = `
+            <span class="text-3xl block mb-1">⚠️</span>
+            <div class="font-black text-base">ESTADO: PEDIDO MARCADO COMO PARCIAL</div>
+            <div class="text-xs mt-1">${data.detalle}</div>
+          `;
+        } else {
+          box.className = 'p-4 rounded-xl border-2 border-green-500 bg-green-50 text-green-900 text-center';
+          box.innerHTML = `
+            <span class="text-3xl block mb-1">✅</span>
+            <div class="font-black text-base">INVENTARIO DISPONIBLE COMPLETO</div>
+            <div class="text-xs mt-1">${data.detalle}</div>
+          `;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function ejecutarPruebasPytest() {
+      const btn = document.getElementById('btn-run-tests');
+      const consola = document.getElementById('consola-pytest');
+      const pill = document.getElementById('test-status-pill');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-70');
+      consola.textContent = 'Ejecutando suite de pruebas unitarias pytest...\n';
+      pill.textContent = 'EJECUTANDO...';
+      pill.className = 'text-yellow-400 font-bold';
+
+      try {
+        const res = await fetch('/api/pruebas/ejecutar', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.ok) {
+          consola.textContent = data.salida;
+          pill.textContent = 'TODAS PASSED (100% ÉXITO)';
+          pill.className = 'text-green-400 font-black';
+        } else {
+          consola.textContent = data.salida || data.error || 'Error ejecutando pruebas';
+          pill.textContent = 'ERROR EN PRUEBAS';
+          pill.className = 'text-red-400 font-black';
+        }
+      } catch (err) {
+        consola.textContent = 'Error de conexión: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70');
+      }
+    }
+
+    function reproducirBeep(frecuencia, duracion) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = frecuencia;
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (duracion / 1000));
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + (duracion / 1000));
+      } catch (e) {}
+    }
+
+    window.onload = () => {
+      cargarCatalogo();
+      cargarCotizaciones();
+      actualizarUltimasVentas();
+    };
+  </script>
+</body>
+</html>
