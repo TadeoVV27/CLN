@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class ICotizacionRepository(ABC):
     @abstractmethod
-    def buscarCotizacionPorId(self, id_cotizacion: str):
+    def buscar_cotizacion_por_id(self, id_cotizacion: str):
         """Recupera una cotización por su identificador."""
         pass
 
