@@ -127,9 +127,11 @@ def crear_documento_word():
         with open(brd_path, "r", encoding="utf-8") as f:
             contenido_brd = f.read()
 
-        # Extraer bloques de historias
+        # Extraer bloques de historias (deteniéndose antes de la sección 4)
         import re
-        historias = re.findall(r"### (US-\d+:.*?)(?=### US-|\Z)", contenido_brd, re.DOTALL)
+        # Cortar el contenido de BRD antes de la sección 4 de BPMN
+        bloque_historias = contenido_brd.split("## 4. Diagrama")[0]
+        historias = re.findall(r"### (US-\d+:.*?)(?=### US-|\Z)", bloque_historias, re.DOTALL)
         for h in historias:
             lineas = h.strip().split("\n")
             titulo = lineas[0]
@@ -138,6 +140,10 @@ def crear_documento_word():
             p_hist = doc.add_paragraph()
             dentro_gherkin = False
             for linea in lineas[1:]:
+                # Ignorar separadores o referencias sobrantes
+                if linea.strip().startswith("---") or linea.strip().startswith("## ") or linea.strip().startswith("!["):
+                    continue
+
                 if "```gherkin" in linea:
                     dentro_gherkin = True
                     p_hist = doc.add_paragraph()
