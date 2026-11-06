@@ -265,6 +265,26 @@
         }
       }
     },
+    "/api/docente/procesar-csvs": {
+      "post": {
+        "tags": [
+          "PIA Evaluador Oficial"
+        ],
+        "summary": "Procesar Csvs Desde Cero",
+        "description": "Carga y procesa todos los datasets CSV oficiales desde cero:\n1. Lee actores, cat\u00e1logo, operaciones y detalles.\n2. Calcula los importes totales con Decimal.\n3. Eval\u00faa los 120 casos de prueba (Specification Pattern).\n4. Eval\u00faa las 20 pruebas de transici\u00f3n (State Machine Pattern).\n5. Genera los archivos 'casos_prueba_resueltos.csv' y 'transiciones_prueba_resueltas.csv'.",
+        "operationId": "procesar_csvs_desde_cero_api_docente_procesar_csvs_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/docente/casos": {
       "get": {
         "tags": [

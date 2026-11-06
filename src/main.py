@@ -392,6 +392,37 @@ if os.path.exists(DATA_DIR):
         pass
 
 
+@app.post("/api/docente/procesar-csvs", tags=["PIA Evaluador Oficial"])
+def procesar_csvs_desde_cero():
+    """
+    Carga y procesa todos los datasets CSV oficiales desde cero:
+    1. Lee actores, catálogo, operaciones y detalles.
+    2. Calcula los importes totales con Decimal.
+    3. Evalúa los 120 casos de prueba (Specification Pattern).
+    4. Evalúa las 20 pruebas de transición (State Machine Pattern).
+    5. Genera los archivos 'casos_prueba_resueltos.csv' y 'transiciones_prueba_resueltas.csv'.
+    """
+    try:
+        evaluador_docente.cargar_datos()
+        casos = evaluador_docente.resolver_casos_prueba(guardar_archivo=True)
+        trans = evaluador_docente.resolver_transiciones_prueba(guardar_archivo=True)
+        return {
+            "ok": True,
+            "mensaje": "Datasets procesados exitosamente desde cero",
+            "actores_cargados": len(evaluador_docente.actores),
+            "articulos_catalogo": len(evaluador_docente.recursos),
+            "operaciones_cargadas": len(evaluador_docente.operaciones),
+            "casos_prueba_resueltos": len(casos),
+            "transiciones_resueltas": len(trans),
+            "archivos_generados": [
+                "data/casos_prueba_resueltos.csv",
+                "data/transiciones_prueba_resueltas.csv"
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/docente/casos", tags=["PIA Evaluador Oficial"])
 def obtener_casos_docente():
     """Retorna los 120 casos de prueba del docente resueltos con el patrón Specification."""
