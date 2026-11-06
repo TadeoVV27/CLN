@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ferremax_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ferremax
+      MYSQL_USER: ferremax_user
+      MYSQL_PASSWORD: ferremax_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  api:
+    build: .
+    container_name: ferremax_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://ferremax_user:ferremax_password@db:3306/ferremax
+    depends_on:
+      - db
+
+volumes:
+  db_data:
