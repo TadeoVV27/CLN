@@ -1,0 +1,579 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API FerreMax - Sistema de Mostrador y Caja",
+    "description": "API REST y Sistema de Mostrador para ventas, cr\u00e9dito e inventario de FerreMax.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/cotizaciones/": {
+      "post": {
+        "tags": [
+          "Cotizaciones"
+        ],
+        "summary": "Crear Cotizacion",
+        "description": "Registra una nueva cotizaci\u00f3n en el sistema.\n- **cliente_id**: Identificador num\u00e9rico del cliente.\n- **productos_ids**: Lista con los identificadores de los productos.\n- **cantidades**: Lista con las cantidades a cotizar por producto.",
+        "operationId": "crear_cotizacion_cotizaciones__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearCotizacionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/creditos/autorizar": {
+      "post": {
+        "tags": [
+          "Cr\u00e9ditos"
+        ],
+        "summary": "Autorizar Credito",
+        "description": "Procesa la autorizaci\u00f3n de cr\u00e9dito para un cliente.\n- Requiere el monto solicitado y el ID del cliente.\n- Internamente delegar\u00e1 la validaci\u00f3n al ValidacionApplicationService.",
+        "operationId": "autorizar_credito_creditos_autorizar_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutorizarCreditoCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/productos": {
+      "get": {
+        "tags": [
+          "Mostrador"
+        ],
+        "summary": "Listar Productos",
+        "description": "Retorna el cat\u00e1logo de productos con stock en tiempo real.",
+        "operationId": "listar_productos_api_productos_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/venta/procesar": {
+      "post": {
+        "tags": [
+          "Mostrador"
+        ],
+        "summary": "Procesar Venta",
+        "description": "CU-01: Procesa una venta en mostrador usando VentaApplicationService.\nDescuenta inventario y confirma transacci\u00f3n en Unit of Work.",
+        "operationId": "procesar_venta_api_venta_procesar_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VentaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cotizaciones": {
+      "get": {
+        "tags": [
+          "Cr\u00e9ditos"
+        ],
+        "summary": "Listar Cotizaciones",
+        "description": "Retorna las cotizaciones registradas para prueba r\u00e1pida.",
+        "operationId": "listar_cotizaciones_api_cotizaciones_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credito/validar": {
+      "post": {
+        "tags": [
+          "Cr\u00e9ditos"
+        ],
+        "summary": "Validar Credito Cotizacion",
+        "description": "CU-03: Valida cotizaci\u00f3n vigente y cr\u00e9dito autorizado.",
+        "operationId": "validar_credito_cotizacion_api_credito_validar_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidarCreditoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/almacen/gestionar-faltante": {
+      "post": {
+        "tags": [
+          "Almac\u00e9n"
+        ],
+        "summary": "Gestionar Faltante",
+        "description": "CU-04: Gestiona faltante de inventario. Si no alcanza, marca pedido como Parcial.",
+        "operationId": "gestionar_faltante_api_almacen_gestionar_faltante_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaltanteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ventas/historial": {
+      "get": {
+        "tags": [
+          "Mostrador"
+        ],
+        "summary": "Historial Ventas",
+        "operationId": "historial_ventas_api_ventas_historial_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docente/casos": {
+      "get": {
+        "tags": [
+          "PIA Evaluador Oficial"
+        ],
+        "summary": "Obtener Casos Docente",
+        "description": "Retorna los 120 casos de prueba del docente resueltos con el patr\u00f3n Specification.",
+        "operationId": "obtener_casos_docente_api_docente_casos_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docente/transiciones": {
+      "get": {
+        "tags": [
+          "PIA Evaluador Oficial"
+        ],
+        "summary": "Obtener Transiciones Docente",
+        "description": "Retorna las 20 pruebas de transici\u00f3n evaluadas con la State Machine.",
+        "operationId": "obtener_transiciones_docente_api_docente_transiciones_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/operaciones/{operacion_id}/transicion": {
+      "post": {
+        "tags": [
+          "M\u00e1quina de Estados"
+        ],
+        "summary": "Ejecutar Transicion Operacion",
+        "description": "Ejecuta una acci\u00f3n sobre una Operaci\u00f3n y dispara eventos de dominio.\nAcciones v\u00e1lidas: 'aprobar', 'surtir', 'entregar', 'completar', 'cancelar'.",
+        "operationId": "ejecutar_transicion_operacion_api_operaciones__operacion_id__transicion_post",
+        "parameters": [
+          {
+            "name": "operacion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operacion Id"
+            }
+          },
+          {
+            "name": "accion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Accion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pruebas/ejecutar": {
+      "post": {
+        "tags": [
+          "Auditor\u00eda"
+        ],
+        "summary": "Ejecutar Pruebas",
+        "description": "Ejecuta pytest en el servidor y retorna el resultado.",
+        "operationId": "ejecutar_pruebas_api_pruebas_ejecutar_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Interfaz"
+        ],
+        "summary": "Frontend Mostrador",
+        "description": "Entrega la interfaz gr\u00e1fica para el trabajador de FerreMax.",
+        "operationId": "frontend_mostrador__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AutorizarCreditoCommand": {
+        "properties": {
+          "cliente_id": {
+            "type": "integer",
+            "title": "Cliente Id"
+          },
+          "monto_solicitado": {
+            "type": "number",
+            "title": "Monto Solicitado"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cliente_id",
+          "monto_solicitado"
+        ],
+        "title": "AutorizarCreditoCommand"
+      },
+      "CrearCotizacionCommand": {
+        "properties": {
+          "cliente_id": {
+            "type": "integer",
+            "title": "Cliente Id"
+          },
+          "productos_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Productos Ids"
+          },
+          "cantidades": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Cantidades"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cliente_id",
+          "productos_ids",
+          "cantidades"
+        ],
+        "title": "CrearCotizacionCommand"
+      },
+      "FaltanteRequest": {
+        "properties": {
+          "producto_id": {
+            "type": "integer",
+            "title": "Producto Id"
+          },
+          "cantidad": {
+            "type": "integer",
+            "title": "Cantidad"
+          },
+          "id_pedido": {
+            "type": "integer",
+            "title": "Id Pedido",
+            "default": 501
+          }
+        },
+        "type": "object",
+        "required": [
+          "producto_id",
+          "cantidad"
+        ],
+        "title": "FaltanteRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidarCreditoRequest": {
+        "properties": {
+          "id_cotizacion": {
+            "type": "integer",
+            "title": "Id Cotizacion"
+          },
+          "folio": {
+            "type": "string",
+            "title": "Folio"
+          },
+          "cliente": {
+            "type": "string",
+            "title": "Cliente"
+          },
+          "vigente": {
+            "type": "boolean",
+            "title": "Vigente"
+          },
+          "credito_autorizado": {
+            "type": "boolean",
+            "title": "Credito Autorizado"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id_cotizacion",
+          "folio",
+          "cliente",
+          "vigente",
+          "credito_autorizado"
+        ],
+        "title": "ValidarCreditoRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VentaRequest": {
+        "properties": {
+          "producto_id": {
+            "type": "integer",
+            "title": "Producto Id"
+          },
+          "cantidad": {
+            "type": "integer",
+            "title": "Cantidad"
+          }
+        },
+        "type": "object",
+        "required": [
+          "producto_id",
+          "cantidad"
+        ],
+        "title": "VentaRequest"
+      }
+    }
+  }
+}

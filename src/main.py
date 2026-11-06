@@ -379,7 +379,82 @@ def historial_ventas():
     return {"ok": True, "ventas": HISTORIAL_VENTAS}
 
 
-@app.post("/api/pruebas/ejecutar", tags=["Auditoría PIA"])
+from src.application.evaluador_docente import EvaluadorDocenteService
+from src.domain.state_machine import TransicionEstadoInvalidaException
+
+# Evaluador del dataset oficial
+DATA_DIR = os.path.join(BASE_DIR, "data")
+evaluador_docente = EvaluadorDocenteService(DATA_DIR)
+if os.path.exists(DATA_DIR):
+    try:
+        evaluador_docente.cargar_datos()
+    except Exception as _e:
+        pass
+
+
+@app.get("/api/docente/casos", tags=["PIA Evaluador Oficial"])
+def obtener_casos_docente():
+    """Retorna los 120 casos de prueba del docente resueltos con el patrón Specification."""
+    try:
+        casos = evaluador_docente.resolver_casos_prueba(guardar_archivo=False)
+        return {"ok": True, "total": len(casos), "casos": casos}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/docente/transiciones", tags=["PIA Evaluador Oficial"])
+def obtener_transiciones_docente():
+    """Retorna las 20 pruebas de transición evaluadas con la State Machine."""
+    try:
+        trans = evaluador_docente.resolver_transiciones_prueba(guardar_archivo=False)
+        return {"ok": True, "total": len(trans), "transiciones": trans}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/operaciones/{operacion_id}/transicion", tags=["Máquina de Estados"])
+def ejecutar_transicion_operacion(operacion_id: str, accion: str):
+    """
+    Ejecuta una acción sobre una Operación y dispara eventos de dominio.
+    Acciones válidas: 'aprobar', 'surtir', 'entregar', 'completar', 'cancelar'.
+    """
+    op = evaluador_docente.operaciones.get(operacion_id)
+    if not op:
+        raise HTTPException(status_code=404, detail=f"Operación '{operacion_id}' no encontrada")
+
+    try:
+        if accion == "aprobar":
+            op.aprobar()
+        elif accion == "surtir":
+            op.surtir()
+        elif accion == "entregar":
+            op.entregar()
+        elif accion == "completar":
+            op.completar()
+        elif accion == "cancelar":
+            op.cancelar()
+        else:
+            raise HTTPException(status_code=400, detail=f"Acción '{accion}' no soportada")
+
+        return {
+            "ok": True,
+            "operacion_id": operacion_id,
+            "nuevo_estado": op.estado,
+            "eventos_emitidos": [e.nombre_evento() for e in op.eventos],
+        }
+    except TransicionEstadoInvalidaException as e:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "Transición de estado inválida",
+                "estado_actual": e.estado_actual,
+                "accion": e.accion,
+                "motivo": e.motivo,
+            }
+        )
+
+
+@app.post("/api/pruebas/ejecutar", tags=["Auditoría"])
 def ejecutar_pruebas():
     """Ejecuta pytest en el servidor y retorna el resultado."""
     test_path = os.path.join(BASE_DIR, "tests")
