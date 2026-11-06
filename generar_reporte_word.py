@@ -156,6 +156,21 @@ def crear_documento_word():
                     if linea.strip():
                         p_hist.add_run(linea + "\n")
 
+    doc.add_heading("1.4 Diagrama de Procesos de Negocio (BPMN)", level=2)
+    doc.add_paragraph(
+        "A continuación se detalla el flujo formal del proceso de negocio (BPMN) para FerreMax, "
+        "desde la solicitud del cliente hasta la entrega física o cancelación:\n\n"
+        "1. Inicio del Proceso: El cliente solicita una cotización o se presenta en el mostrador para una compra directa.\n"
+        "2. Validación de Condiciones Comerciales (Compuerta Exclusiva):\n"
+        "   • Si la cotización está vencida o el crédito no está aprobado -> La operación se detiene y transita a CANCELADO.\n"
+        "   • Si las condiciones son válidas -> La operación es APROBADA por el supervisor.\n"
+        "3. Verificación de Existencias en Bodega (Compuerta Exclusiva):\n"
+        "   • Si el inventario disponible cubre la totalidad -> Se autoriza el SURTIDO completo.\n"
+        "   • Si hay inventario insuficiente -> Se genera un Pedido PARCIAL y se dispara solicitud de resurtido a la sucursal de origen.\n"
+        "4. Despacho y Entrega: El chofer o bodeguero entrega el material al cliente, transicionando la orden a ENTREGADO.\n"
+        "5. Fin del Proceso: Emisión del ticket y actualización de inventario físico."
+    )
+
     doc.add_page_break()
 
     # ------------------------------------------------------------------------
@@ -164,7 +179,19 @@ def crear_documento_word():
     h2 = doc.add_heading("2. Diseño Arquitectural y Patrones de Software", level=1)
     h2.runs[0].font.color.rgb = RGBColor(16, 52, 106)
 
-    doc.add_heading("2.1 Arquitectura Limpia y Principios SOLID", level=2)
+    doc.add_heading("2.1 Diagrama de Clases del Dominio (UML / DDD)", level=2)
+    diag_clases = os.path.join(BASE_DIR, "diagrams", "diagrama-clases.png")
+    if os.path.exists(diag_clases):
+        try:
+            doc.add_picture(diag_clases, width=Inches(6.0))
+            p_pie = doc.add_paragraph("Figura 1: Diagrama de Clases del Modelo de Dominio FerreMax (DDD)")
+            p_pie.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_pie.runs[0].font.size = Pt(9)
+            p_pie.runs[0].font.italic = True
+        except Exception:
+            pass
+
+    doc.add_heading("2.2 Arquitectura Limpia y Principios SOLID", level=2)
     doc.add_paragraph(
         "La solución aplica Clean Architecture separando el software en capas concéntricas:\n"
         "• Dominio (src/domain/): Libre de dependencias externas. Contiene entidades (Actor, Recurso, Operación), "
@@ -215,6 +242,31 @@ def crear_documento_word():
         row.cells[1].paragraphs[0].add_run(t)
         row.cells[2].paragraphs[0].add_run(e)
         row.cells[3].paragraphs[0].add_run(j)
+
+    doc.add_heading("2.5 Diagramas de Secuencia (Flujo Normal y Excepciones)", level=2)
+    diag_seq_normal = os.path.join(BASE_DIR, "diagrams", "secuencia-venta-normal.png")
+    if os.path.exists(diag_seq_normal):
+        try:
+            doc.add_paragraph("Flujo Normal (Venta de Mostrador Exitosa):")
+            doc.add_picture(diag_seq_normal, width=Inches(5.8))
+            p_pie1 = doc.add_paragraph("Figura 2: Diagrama de Secuencia - Flujo Normal de Venta en Mostrador")
+            p_pie1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_pie1.runs[0].font.size = Pt(9)
+            p_pie1.runs[0].font.italic = True
+        except Exception:
+            pass
+
+    diag_seq_exc = os.path.join(BASE_DIR, "diagrams", "secuencia-excepcion.png")
+    if os.path.exists(diag_seq_exc):
+        try:
+            doc.add_paragraph("Flujo de Excepción (Detención por Cotización Vencida / Crédito No Aprobado):")
+            doc.add_picture(diag_seq_exc, width=Inches(5.8))
+            p_pie2 = doc.add_paragraph("Figura 3: Diagrama de Secuencia - Flujo de Excepción y Detención")
+            p_pie2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_pie2.runs[0].font.size = Pt(9)
+            p_pie2.runs[0].font.italic = True
+        except Exception:
+            pass
 
     doc.add_page_break()
 
@@ -316,11 +368,15 @@ def crear_documento_word():
     destino_desktop = desktop_onedrive if os.path.exists(desktop_onedrive) else desktop_standard
     ruta_desktop = os.path.join(destino_desktop, "Reporte_Final_PIA_FerreMax.docx")
     ruta_docs = os.path.join(BASE_DIR, "docs", "Reporte_Final_PIA_FerreMax.docx")
-
     doc.save(ruta_docs)
-    doc.save(ruta_desktop)
-    print(f"[OK] Reporte generado en docs: {ruta_docs}")
-    print(f"[OK] Reporte generado en Escritorio: {ruta_desktop}")
+
+    try:
+        doc.save(ruta_desktop)
+        print(f"[OK] Reporte generado en Escritorio: {ruta_desktop}")
+    except PermissionError:
+        ruta_alt = os.path.join(destino_desktop, "Reporte_Final_PIA_FerreMax_Actualizado.docx")
+        doc.save(ruta_alt)
+        print(f"[AVISO] El archivo original estaba abierto en Word. Se guardó como: {ruta_alt}")
 
 if __name__ == "__main__":
     crear_documento_word()
